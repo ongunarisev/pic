@@ -31,7 +31,7 @@ fgcirc = i3.Circuit(
     exposed_ports=exposed_port_names,
 )
 
-# Layout
+# This is the first stage of the circuit
 fgc_layout = fgcirc.Layout()
 # fgc_layout.visualize(annotate=True)
 # fgc_layout.write_gdsii("GC_TE_couplers_1550nm_array.gds")
@@ -39,6 +39,9 @@ fgc_layout = fgcirc.Layout()
 # We instantiate Y-branch
 y_branch = pdk.EbeamY1550()
 # y_branch.Layout().visualize(annotate=True)
+
+# Create the floor plan
+floorplan = pdk.FloorPlan(name="FLOORPLAN", size=(605.0, 410.0))
 
 # Connect the Y-branch to the input grating
 insts = {
@@ -48,10 +51,14 @@ insts = {
 
 specs = [
     i3.Join("grating_array:gc_02", "yb_1:opt1"),
-    # i3.Place("yb_1:opt1", (0, 0)),
 ]
 
-# 6. We define the names of the exposed ports that we want to access.
+
+# Add the floorplan to the instances dict and place it at (0.0, 0.0)
+insts["floorplan"] = floorplan
+specs.append(i3.Place("floorplan", (0.0, 0.0)))
+
+# Define the names of the exposed ports that we want to access.
 exposed_port_names = {
     "yb_1:opt2": "yb1_1",
     "yb_1:opt3": "yb1_2",
@@ -64,5 +71,41 @@ fgcirc_y = i3.Circuit(
     exposed_ports=exposed_port_names,
 )
 
+# This is the second stage of the circuit
 fgcirc_y_layout = fgcirc_y.Layout()
 fgcirc_y_layout.visualize(annotate=True)
+
+# Now moving onto the third stage which is adding two interferometers
+insts = {
+    "fgcirc_y": fgcirc_y,
+    "yb_2": y_branch,
+    "yb_3": y_branch,
+}
+
+specs = [
+    # i3.PlaceRelative("yb_2:opt1", "fgcirc_y:yb1_1", (5, 10), angle=90),
+    # i3.PlaceRelative("yb_3:opt1", "fgcirc_y:yb1_2", (5, -10), angle=-90),
+    i3.Join("fgcirc_y:yb1_1", "yb_2:opt1"),
+    i3.Join("fgcirc_y:yb1_2", "yb_3:opt1"),
+    # i3.Place("yb_2:opt1", (20, 100)),
+    # i3.Place("yb_3:opt1", (20, 160)),
+]
+
+
+exposed_port_names ={
+    "yb_2:opt2": "yb2_1",
+    "yb_2:opt3": "yb2_2",
+    "yb_3:opt2": "yb3_1",
+    "yb_3:opt3": "yb3_2"
+}
+
+fgcirc_y2 = i3.Circuit(
+    name="GCs_ybranch2",
+    insts=insts,
+    specs=specs,
+    exposed_ports=exposed_port_names,
+)
+
+# This is the third stage of the circuit
+fgcirc_y2_layout = fgcirc_y2.Layout()
+fgcirc_y2_layout.visualize(annotate=True)
