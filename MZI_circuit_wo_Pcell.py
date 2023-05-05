@@ -5,10 +5,16 @@ from siepic import all as pdk
 from ipkiss3 import all as i3
 import pylab as plt
 
+### PARAMETERS
 # The fiber spacing
 f_spacing = 127  # microns
 n_instances = 3  # We use a total of 3 fibers
 input_port = 2  # Where is the input port
+
+# The spacing between the first and second stage splitter
+x_spacing = 15
+y_spacing = 15
+
 
 # We instantiate the fiber grating coupler.
 fgc = pdk.EbeamGCTE1550()
@@ -75,7 +81,8 @@ fgcirc_y = i3.Circuit(
 fgcirc_y_layout = fgcirc_y.Layout()
 fgcirc_y_layout.visualize(annotate=True)
 
-# Now moving onto the third stage which is adding two interferometers
+# Now moving onto the third stage which is completing the circuit before MZI splitters
+
 insts = {
     "fgcirc_y": fgcirc_y,
     "yb_2": y_branch,
@@ -83,12 +90,11 @@ insts = {
 }
 
 specs = [
-    # i3.PlaceRelative("yb_2:opt1", "fgcirc_y:yb1_1", (5, 10), angle=90),
-    # i3.PlaceRelative("yb_3:opt1", "fgcirc_y:yb1_2", (5, -10), angle=-90),
-    i3.Join("fgcirc_y:yb1_1", "yb_2:opt1"),
-    i3.Join("fgcirc_y:yb1_2", "yb_3:opt1"),
-    # i3.Place("yb_2:opt1", (20, 100)),
-    # i3.Place("yb_3:opt1", (20, 160)),
+    i3.ConnectManhattan("fgcirc_y:yb1_1", "yb_2:opt1"),
+    i3.ConnectManhattan("fgcirc_y:yb1_2", "yb_3:opt1"),
+    i3.PlaceRelative("yb_2:opt1", "fgcirc_y:yb1_1", (x_spacing, y_spacing)),
+    i3.PlaceRelative("yb_3:opt1", "fgcirc_y:yb1_2", (x_spacing, -y_spacing)),
+
 ]
 
 
