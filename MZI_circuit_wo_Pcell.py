@@ -97,8 +97,8 @@ insts = {
 specs = [
     i3.ConnectManhattan("fgcirc_y:yb1_1", "yb_2:opt1"),
     i3.ConnectManhattan("fgcirc_y:yb1_2", "yb_3:opt1"),
-    i3.PlaceRelative("yb_2:opt1", "fgcirc_y:yb1_1", (x_spacing, y_spacing)),
-    i3.PlaceRelative("yb_3:opt1", "fgcirc_y:yb1_2", (x_spacing, -y_spacing)),
+    i3.PlaceRelative("fgcirc_y:yb1_1", "yb_2:opt1", (-x_spacing, -y_spacing)),
+    i3.PlaceRelative("fgcirc_y:yb1_2", "yb_3:opt1", (-x_spacing, y_spacing)),
 
 ]
 
@@ -133,10 +133,10 @@ specs = [
     i3.ConnectManhattan("fgcirc_y2:yb2_2", "yb_4:opt2"),
     i3.ConnectManhattan("fgcirc_y2:yb3_1", "yb_5:opt3"),
     i3.ConnectManhattan("fgcirc_y2:yb3_2", "yb_5:opt2"),
-    i3.PlaceRelative("yb_4:opt1", "fgcirc_y2:yb2_1", (2.5 * x_spacing, y_spacing*3)),
-    i3.PlaceRelative("yb_5:opt1", "fgcirc_y2:yb3_2", (2.5 * x_spacing, -y_spacing*3)),
-    i3.FlipH("yb_4"),
-    i3.FlipH("yb_5")
+    i3.PlaceRelative("fgcirc_y2:yb2_1", "yb_4:opt1", (-2.5 * x_spacing, -y_spacing*3)),
+    i3.PlaceRelative("fgcirc_y2:yb3_2", "yb_5:opt1", (-2.5 * x_spacing, y_spacing*3)),
+    # i3.FlipH("yb_4"),
+    # i3.FlipH("yb_5")
 ]
 
 exposed_port_names = {
@@ -159,11 +159,12 @@ fgcirc_y3_layout.visualize(annotate=True)
 
 insts = {
     "fgcirc_y3": fgcirc_y3,
+    "fgcirc": fgcirc
 }
 
 specs = [
-    i3.ConnectManhattan("fgcirc_y3:out_mzi_1", "fgcirc_y3:gc_02"),
-    i3.ConnectManhattan("fgcirc_y3:out_mzi_2", "fgcirc_y3:gc_01"),
+    i3.ConnectManhattan("fgcirc_y3:out_mzi_1", "fgcirc:gc_03"),
+    i3.ConnectManhattan("fgcirc_y3:out_mzi_2", "fgcirc:gc_01"),
 ]
 
 exposed_port_names = {}
@@ -178,3 +179,4 @@ fgcirc_y4 = i3.Circuit(
 # This is the fourth stage of the circuit
 fgcirc_y4_layout = fgcirc_y4.Layout()
 fgcirc_y4_layout.visualize(annotate=True)
+fgcirc_y4_layout.write_gdsii("GC_TE_couplers_w_MZI_1550nm.gds")
