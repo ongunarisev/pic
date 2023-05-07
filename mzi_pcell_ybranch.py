@@ -32,7 +32,10 @@ class MZI(i3.Circuit):
             "fgc_2": self.fgc,
             "fgc_3": self.fgc,
             "yb_s": self.splitter,
-            "yb_c": self.splitter,
+            "yb_s1": self.splitter,
+            "yb_s2": self.splitter,
+            "yb_c1": self.splitter,
+            "yb_c2": self.splitter,
         }
         return insts
 
@@ -42,19 +45,26 @@ class MZI(i3.Circuit):
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
             i3.PlaceRelative("fgc_3:opt1", "fgc_2:opt1", (0.0, fgc_spacing_y)),
-            i3.PlaceRelative("yb_c:opt1", "yb_s:opt2", (20.0, -fgc_spacing_y / 2), angle=-90),
+            i3.PlaceRelative("yb_s1:opt1", "yb_s:opt3", (20.0, -fgc_spacing_y / 8), angle=90),
+            i3.PlaceRelative("yb_s2:opt1", "yb_s:opt2", (20.0, fgc_spacing_y / 8), angle=-90),
+            i3.PlaceRelative("yb_c1:opt1", "yb_s:opt3", (20.0, -7*fgc_spacing_y / 8), angle=-90),
+            i3.PlaceRelative("yb_c2:opt1", "yb_s:opt2", (20.0, 7*fgc_spacing_y / 8), angle=90),
             i3.Join("fgc_2:opt1", "yb_s:opt1"),
         ]
 
         specs += [
             i3.ConnectManhattan(
                 [
-                    ("yb_s:opt3", "yb_c:opt2", "ybs_opt3_to_ybc_opt2"),
-                    ("yb_c:opt1", "fgc_1:opt1", "ybc_opt1_to_fgc_2_opt1"),
-                    # ("dc:opt3", "fgc_1:opt1", "dc_opt3_to_fgc_1_opt1"),
+                    ("yb_s:opt3", "yb_s1:opt1", "yb_s_opt3_to_yb_s1_opt1"),
+                    ("yb_s:opt2", "yb_s2:opt1", "yb_s_opt3_to_yb_s2_opt1"),
+                    ("yb_c1:opt1", "fgc_1:opt1", "yb_c1_opt1_to_fgc_1_opt1"),
+                    ("yb_c2:opt1", "fgc_3:opt1", "yb_c2_opt1_to_fgc_1_opt1"),
+                    ("yb_s2:opt2", "yb_c2:opt3", "yb_s2_opt2_to_yb_c2_opt3"),
+                    ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt2_to_yb_c1_opt2"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s:opt2", "yb_c:opt3", "ybs_opt2_to_ybc_opt3", control_points=[self.control_point]),
+            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3"), #, control_points=[self.control_point]),
+            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt3") #, control_points=[self.control_point]),
         ]
         return specs
 
@@ -64,7 +74,6 @@ class MZI(i3.Circuit):
             lv_instances["ybs_opt3_to_ybc_opt2"],
             lv_instances["ybc_opt1_to_fgc_2_opt1"],
             lv_instances["ybs_opt2_to_ybc_opt3"],
-            # lv_instances["dc_opt3_to_fgc_1_opt1"],
         ]
 
     def _default_exposed_ports(self):
@@ -86,8 +95,8 @@ if __name__ == "__main__":
     )
     mzi_layout = mzi.Layout()
     mzi_layout.visualize(annotate=True)
-    mzi_layout.visualize_2d()
-    mzi_layout.write_gdsii("mzi.gds")
+    # mzi_layout.visualize_2d()
+    # mzi_layout.write_gdsii("mzi.gds")
 
     # Circuit model
     my_circuit_cm = mzi.CircuitModel()
