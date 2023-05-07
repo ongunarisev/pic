@@ -9,7 +9,7 @@ import numpy as np
 TECH = get_technology()
 
 
-class MZI(i3.Circuit):
+class MZI_YB(i3.Circuit):
     fgc_spacing_y = 127.0
     control_point1 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     control_point2 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
@@ -19,10 +19,10 @@ class MZI(i3.Circuit):
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
 
     def _default_control_point1(self):
-        return (100.0, (1/2) * self.fgc_spacing_y)
+        return (100.0, self.fgc_spacing_y - 50)
 
     def _default_control_point2(self):
-        return (100.0, (3/2) * self.fgc_spacing_y)
+        return (100.0, self.fgc_spacing_y + 50)
 
     def _default_fgc(self):
         return pdk.EbeamGCTE1550()
@@ -64,20 +64,21 @@ class MZI(i3.Circuit):
                     ("yb_c1:opt1", "fgc_1:opt1", "yb_c1_opt1_to_fgc_1_opt1"),
                     ("yb_c2:opt1", "fgc_3:opt1", "yb_c2_opt1_to_fgc_1_opt1"),
                     ("yb_s2:opt2", "yb_c2:opt3", "yb_s2_opt2_to_yb_c2_opt3"),
-                    ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt2_to_yb_c1_opt2"),
+                    ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt3_to_yb_c1_opt2"),
                 ]
             ),
             i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1]),
-            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt3", control_points=[self.control_point2]),
+            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt2", control_points=[self.control_point2]),
         ]
         return specs
 
     def get_connector_instances(self):
         lv_instances = self.get_default_view(i3.LayoutView).instances
         return [
-            lv_instances["ybs_opt3_to_ybc_opt2"],
-            lv_instances["ybc_opt1_to_fgc_2_opt1"],
-            lv_instances["ybs_opt2_to_ybc_opt3"],
+            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Long arm MZI 1
+            lv_instances["yb_s1_opt3_to_yb_c1_opt2"],
+            lv_instances["yb_s2_opt3_to_yb_c2_opt2"],  # Long arm MZI 2
+            lv_instances["yb_s2_opt2_to_yb_c2_opt3"]
         ]
 
     def _default_exposed_ports(self):
@@ -92,14 +93,14 @@ class MZI(i3.Circuit):
 if __name__ == "__main__":
 
     # Layout
-    mzi = MZI(
+    mzi = MZI_YB(
         name="MZI",
-        # control_point=(100.0, 240.0),
         bend_radius=5.0,
     )
     mzi_layout = mzi.Layout()
-    mzi_layout.visualize(annotate=True)
-    # mzi_layout.visualize_2d()
+    fig = mzi_layout.visualize(annotate=True, show=False)
+    fig.axes[0].scatter(mzi.control_point1.x, mzi.control_point1.y, color='m')
+    fig.axes[0].scatter(mzi.control_point2.x, mzi.control_point2.y, color='m')
     # mzi_layout.write_gdsii("mzi.gds")
 
     # Circuit model
@@ -108,9 +109,10 @@ if __name__ == "__main__":
     S_total = my_circuit_cm.get_smatrix(wavelengths=wavelengths)
 
     # Plotting
-    plt.plot(wavelengths, i3.signal_power_dB(S_total["out1:0", "in:0"]), "-", linewidth=2.2, label="TE-out1")
-    plt.plot(wavelengths, i3.signal_power_dB(S_total["out2:0", "in:0"]), "-", linewidth=2.2, label="TE-out2")
-    plt.xlabel("Wavelength [um]", fontsize=16)
-    plt.ylabel("Transmission [dB]", fontsize=16)
-    plt.legend(fontsize=14, loc=4)
+    fig, ax = plt.subplots()
+    ax.plot(wavelengths, i3.signal_power_dB(S_total["out1:0", "in:0"]), "-", linewidth=2.2, label="TE-out1")
+    ax.plot(wavelengths, i3.signal_power_dB(S_total["out2:0", "in:0"]), "-", linewidth=2.2, label="TE-out2")
+    ax.set_xlabel("Wavelength [um]", fontsize=16)
+    ax.set_ylabel("Transmission [dB]", fontsize=16)
+    ax.legend(fontsize=14, loc=4)
     plt.show()
