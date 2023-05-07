@@ -10,15 +10,19 @@ TECH = get_technology()
 
 
 class MZI(i3.Circuit):
-
-    control_point = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
+    fgc_spacing_y = 127.0
+    control_point1 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
+    control_point2 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
 
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
 
-    def _default_control_point(self):
-        return [(100.0, 220.0)]
+    def _default_control_point1(self):
+        return (100.0, (1/2) * self.fgc_spacing_y)
+
+    def _default_control_point2(self):
+        return (100.0, (3/2) * self.fgc_spacing_y)
 
     def _default_fgc(self):
         return pdk.EbeamGCTE1550()
@@ -40,7 +44,7 @@ class MZI(i3.Circuit):
         return insts
 
     def _default_specs(self):
-        fgc_spacing_y = 127.0
+        fgc_spacing_y = self.fgc_spacing_y
         specs = [
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
@@ -63,8 +67,8 @@ class MZI(i3.Circuit):
                     ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt2_to_yb_c1_opt2"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3"), #, control_points=[self.control_point]),
-            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt3") #, control_points=[self.control_point]),
+            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1]),
+            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt3", control_points=[self.control_point2]),
         ]
         return specs
 
@@ -90,7 +94,7 @@ if __name__ == "__main__":
     # Layout
     mzi = MZI(
         name="MZI",
-        control_point=(100.0, 240.0),
+        # control_point=(100.0, 240.0),
         bend_radius=5.0,
     )
     mzi_layout = mzi.Layout()
