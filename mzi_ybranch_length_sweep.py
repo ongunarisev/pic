@@ -7,13 +7,13 @@ import pylab as plt
 from mzi_pcell_ybranch import MZI_YB
 
 
-def define_control_point(delay_length_tuple, bend_radius, control_point_y_tuple):
+def define_control_point(delay_length_tuple, bend_radius, cp_y_tup):
     """Defines a control point based on the desired delay_length"""
 
     def f(x):
         device = MZI_YB(
-            control_point1=(x[0], control_point_y_tuple[0]),
-            control_point2=(x[1], control_point_y_tuple[1]),
+            control_point1=(x[0], cp_y_tup[0]),
+            control_point2=(x[1], cp_y_tup[1]),
             bend_radius=bend_radius,
         )
         mzi1_long_arm_length = device.get_connector_instances()[0].reference.trace_length()
@@ -29,8 +29,8 @@ def define_control_point(delay_length_tuple, bend_radius, control_point_y_tuple)
 
     from scipy.optimize import minimize
 
-    control_point_x_tuple = minimize(f, x0=np.array(70.0, 70.0), tol=1e-2).x
-    return control_point_x_tuple, control_point_y_tuple
+    cp_x_tup = minimize(f, x0=np.array([70.0, 70.0]), tol=1e-2).x
+    return [(x , cp_y_tup[i]) for i, x in enumerate(cp_x_tup)]
 
 
 # Parameters for the MZI sweep
@@ -51,18 +51,18 @@ insts["floorplan"] = floorplan
 specs.append(i3.Place("floorplan", (0.0, 0.0)))
 
 # Create the MZI sweep
-for ind, delay_length in enumerate(delay_lengths, start=1):
+for ind, delay_length in enumerate(delay_lengths):
     cp = define_control_point(
         delay_length_tuple=delay_length,
         bend_radius=bend_radius,
-        control_point_y_tuple=(77, 177),
+        cp_y_tup=(77, 177),
     )
 
     # Instantiate the MZI
     mzi = MZI_YB(
         name="MZI{}".format(ind),
-        control_point1=cp,
-        control_point2=cp,
+        control_point1=cp[0],
+        control_point2=cp[1],
         bend_radius=bend_radius,
     )
 
@@ -78,7 +78,8 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
         mzi.name,
         "Desired delay length = {} um".format(delay_length),
         "Actual delay length = {} um".format((mzi1_delay_length, mzi2_delay_length)),
-        "Control point = {}".format(cp),
+        "Control points 1 = {}".format(cp[0]),
+        "Control points 2 = {}".format(cp[1]),
     )
 
     # Add the MZI to the instances dict and place it
@@ -106,7 +107,7 @@ wavelengths = np.linspace(1.52, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
 # Plotting
-fig, axs = plt.subplots(3, sharex="all")
+fig, axs = plt.subplots(2, sharex="all")
 
 for ind, delay_length in enumerate(delay_lengths):
     tr_out1 = i3.signal_power_dB(S_total["mzi{}_out1:0".format(ind), "mzi{}_in:0".format(ind)])
@@ -119,7 +120,7 @@ for ind, delay_length in enumerate(delay_lengths):
     axs[ind].set_title("MZI{} - Delay length {} um".format(ind, delay_length), fontsize=16)
     axs[ind].legend(fontsize=14, loc=4)
 
-axs[2].set_xlabel("Wavelength [um]", fontsize=16)
+axs[1].set_xlabel("Wavelength [um]", fontsize=16)
 plt.show()
 
 print("Done")
