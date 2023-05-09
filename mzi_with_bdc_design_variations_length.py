@@ -80,7 +80,7 @@ for ind, delay_length in enumerate(delay_lengths):
 
 # Create the final design with i3.Circuit
 cell = i3.Circuit(
-    name="EBeam_chiara_v1",
+    name="mzi_bdc_with_set_deltaL",
     insts=insts,
     specs=specs,
 )
@@ -88,7 +88,7 @@ cell = i3.Circuit(
 # Layout
 cell_lv = cell.Layout()
 cell_lv.visualize(annotate=True)
-cell_lv.write_gdsii("EBeam_chiara.gds")
+cell_lv.write_gdsii("mzi_bdc_with_set_deltaL.gds")
 
 # Circuit model
 cell_cm = cell.CircuitModel()
