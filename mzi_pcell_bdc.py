@@ -73,8 +73,8 @@ class MZI_BDC(i3.Circuit):
 
     def _default_exposed_ports(self):
         exposed_ports = {
-            "fgc_3:fib1": "in",
-            "fgc_2:fib1": "out1",
+            "fgc_3:fib1": "out1",
+            "fgc_2:fib1": "in",
             "fgc_1:fib1": "out2",
         }
         return exposed_ports
