@@ -9,7 +9,7 @@ import numpy as np
 TECH = get_technology()
 
 
-class MZI(i3.Circuit):
+class MZI_BDC(i3.Circuit):
 
     control_point = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
@@ -83,7 +83,7 @@ class MZI(i3.Circuit):
 if __name__ == "__main__":
 
     # Layout
-    mzi = MZI(
+    mzi = MZI_BDC(
         name="MZI",
         control_point=(100.0, 240.0),
         bend_radius=5.0,
