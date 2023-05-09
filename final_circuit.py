@@ -8,8 +8,16 @@ import pylab as plt
 from mzi_pcell_ybranch import MZI_YB
 from mzi_pcell_bdc import MZI_BDC
 from datetime import datetime
+from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
 
-# The optimization functions to determine the lenghts of the long arm of the interferometers
+# We make a copy of the layer dictionary to freely modify it
+pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
+# Write the content to be written on WG_P6NM on Silicon layer directly
+pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.TECH.PROCESS.WG, i3.TECH.PURPOSE.DRAWING]
+output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
+
+
+# The optimization functions to determine the lengths of the long arm of the interferometers
 def define_control_point_mzi_bdc(delay_length, bend_radius, control_point_y):
     """Defines a control point based on the desired delay_length for MZI with BDC"""
 
@@ -168,7 +176,7 @@ plt.rcParams['figure.dpi'] = 100
 cell_lv = cell.Layout()
 cell_lv.visualize(annotate=True)
 cell_lv.visualize_2d()
-cell_lv.write_gdsii("EBeam_Vesnog_IPKISS.gds")
+cell_lv.write_gdsii("EBeam_Vesnog_IPKISS.gds", layer_map=output_layer_map)
 
 # Circuit model
 cell_cm = cell.CircuitModel()
