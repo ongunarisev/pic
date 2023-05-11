@@ -12,10 +12,10 @@ si_fab/ipkiss/si_fab/compactmodels/all.py -> MMI1x2Model to extract the S-matrix
 # Importing the technology and IPKISS
 from si_fab import all as pdk
 from ipkiss3 import all as i3
-from mmi_pcell import MMI1x2
+from mmi2x2_pcell import MMI2x2
 
 # 1. Instantiate the MMI
-mmi = MMI1x2(
+mmi = MMI2x2(
     trace_template=pdk.SiWireWaveguideTemplate(),
     width=5.0,
     length=15.0,
@@ -27,7 +27,7 @@ mmi_layout = mmi.Layout()
 
 # 2. Visualize the layout and export to GDSII
 mmi_layout.visualize(annotate=True)
-mmi_layout.write_gdsii("first_mmi.gds")
+# mmi_layout.write_gdsii("mmi2x2.gds")
 
 # 3. Virtual fabrication and cross-section
 mmi_layout.visualize_2d(process_flow=pdk.TECH.VFABRICATION.PROCESS_FLOW_FEOL)
