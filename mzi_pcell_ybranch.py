@@ -17,6 +17,12 @@ class MZI_YB(i3.Circuit):
 
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
+    fgc_spacing_y = i3.PositiveNumberProperty(default=127.0, doc="Fiber separation")
+    measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
+    measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
+
+    def _default_measurement_label_position(self):
+        return 0.0, self.fgc_spacing_y
 
     def _default_control_point1(self):
         return (100.0, self.fgc_spacing_y - 50)

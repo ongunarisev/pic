@@ -17,6 +17,12 @@ class MZI_BDC(i3.Circuit):
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
     dir_coupler = i3.ChildCellProperty(doc="PCell for the directional coupler")
+    fgc_spacing_y = i3.PositiveNumberProperty(default=127.0, doc="Fiber separation")
+    measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
+    measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
+
+    def _default_measurement_label_position(self):
+        return 0.0, self.fgc_spacing_y
 
     def _default_control_point(self):
         return [(100.0, 220.0)]
@@ -41,11 +47,11 @@ class MZI_BDC(i3.Circuit):
         return insts
 
     def _default_specs(self):
-        fgc_spacing_y = 127.0
+        # fgc_spacing_y = 127.0
         specs = [
             i3.Place("fgc_1:opt1", (0, 0)),
-            i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
-            i3.PlaceRelative("fgc_3:opt1", "fgc_2:opt1", (0.0, fgc_spacing_y)),
+            i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, self.fgc_spacing_y)),
+            i3.PlaceRelative("fgc_3:opt1", "fgc_2:opt1", (0.0, self.fgc_spacing_y)),
             i3.PlaceRelative("dc:opt1", "yb:opt2", (20.0, -40.0), angle=90),
             i3.Join("fgc_3:opt1", "yb:opt1"),
         ]

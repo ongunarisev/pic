@@ -3,6 +3,7 @@
 
 from siepic import all as pdk
 from ipkiss3 import all as i3
+from ipkiss3 import constants
 import numpy as np
 import pylab as plt
 from mzi_pcell_ybranch import MZI_YB
@@ -80,6 +81,9 @@ floorplan = pdk.FloorPlan(name="FLOORPLAN", size=(605.0, 410.0))
 # Add the floor plan to the instances dict and place it at (0.0, 0.0)
 insts["floorplan"] = floorplan
 specs.append(i3.Place("floorplan", (0.0, 0.0)))
+# Initialize the text label dictionary
+text_label_dict = {}  # Text labels dictionary for automated measurement labels
+circuit_cell_names = []  # Constituent circuit cell names list
 
 # Create the MZI sweep for MZIs with Y-branches
 for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
@@ -114,10 +118,17 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     )
 
     # Add the MZI to the instances dict and place it
-    mzi_cell_name = "mzi_yb{}".format(ind)
+    mzi_cell_name = "MZIyb{}".format(ind)
     insts[mzi_cell_name] = mzi_yb
     specs.append(i3.Place(mzi_cell_name, (x0, y0)))
 
+    # Put the measurement label
+    meas_label = f"{mzi_yb.measurement_label_pretext}{mzi_cell_name}"
+    meas_label_coord = mzi_yb.measurement_label_position + (x0, y0)
+    text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
+    circuit_cell_names.append(mzi_cell_name)
+
+    # Place the next circuit to the right of GDS layout
     x0 += spacing_x
 
 
@@ -154,15 +165,22 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
     )
 
     # Add the MZI to the instances dict and place it
-    mzi_cell_name = "mzi_bdc{}".format(ind)
+    mzi_cell_name = "MZIbdc{}".format(ind)
     insts[mzi_cell_name] = mzi_bdc
     specs.append(i3.Place(mzi_cell_name, (x0, y0)))
 
+    # Put the measurement label
+    meas_label = f"{mzi_bdc.measurement_label_pretext}{mzi_cell_name}"
+    meas_label_coord = mzi_bdc.measurement_label_position + (x0, y0)
+    text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
+    circuit_cell_names.append(mzi_cell_name)
+
+    # Place the next circuit to the right of GDS layout
     x0 += spacing_x
 
 
 # Create the final design with i3.Circuit
-cell = i3.Circuit(
+top_cell = i3.Circuit(
     name=f"EBeam_OngunArisev_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
     insts=insts,
     specs=specs,
@@ -172,14 +190,31 @@ cell = i3.Circuit(
 plt.rcParams['figure.figsize'] = [12, 8]
 plt.rcParams['figure.dpi'] = 100
 
+# Put the text labels
+test_test_elem = i3.Label(layer=i3.TECH.PPLAYER.TEXT, text="opt_in_TE_1550_device_Vesnog_MZIbdc2", coordinate=(0.0, 127.0),
+                      alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
+# elems += i3.Label(layer=i3.TECH.PPLAYER.TEXT, text="opt_in_TE_1550_device_Vesnog_MZIbdc2", coordinate=(0.0, 254.0),
+#                           alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
+# Any number of layout primitives can be added here
+
+text_elems = []
+# For the GDS text elements for automated measurement
+for cell in circuit_cell_names:
+    text_label = text_label_dict[cell][0]
+    text_label_coord = text_label_dict[cell][1]
+    text_elems += i3.Label(layer=i3.TECH.PPLAYER.TEXT, text=text_label,
+                          coordinate=text_label_coord,
+                          alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
+
 # Layout
-cell_lv = cell.Layout()
+cell_lv = top_cell.Layout()
+cell_lv.append(text_elems)
 cell_lv.visualize(annotate=True)
 cell_lv.visualize_2d()
 cell_lv.write_gdsii("EBeam_Vesnog_IPKISS.gds", layer_map=output_layer_map)
 
 # Circuit model
-cell_cm = cell.CircuitModel()
+cell_cm = top_cell.CircuitModel()
 wavelengths = np.linspace(1.52, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
@@ -189,8 +224,8 @@ fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
 for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
-    tr_out1 = i3.signal_power_dB(S_total["mzi_yb{}_out1:0".format(ind), "mzi_yb{}_in:0".format(ind)])
-    tr_out2 = i3.signal_power_dB(S_total["mzi_yb{}_out2:0".format(ind), "mzi_yb{}_in:0".format(ind)])
+    tr_out1 = i3.signal_power_dB(S_total["MZIyb{}_out1:0".format(ind), "MZIyb{}_in:0".format(ind)])
+    tr_out2 = i3.signal_power_dB(S_total["MZIyb{}_out2:0".format(ind), "MZIyb{}_in:0".format(ind)])
 
     # Indices of the axes will be zero based
     ax_idx = ind - 1
@@ -202,8 +237,8 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     axs[ax_idx].legend(fontsize=14, loc=4)
 
 for ind2, delay_length in enumerate(delay_lengths, start=1):
-    tr_out1 = i3.signal_power_dB(S_total["mzi_bdc{}_out1:0".format(ind2), "mzi_bdc{}_in:0".format(ind2)])
-    tr_out2 = i3.signal_power_dB(S_total["mzi_bdc{}_out2:0".format(ind2), "mzi_bdc{}_in:0".format(ind2)])
+    tr_out1 = i3.signal_power_dB(S_total["MZIbdc{}_out1:0".format(ind2), "MZIbdc{}_in:0".format(ind2)])
+    tr_out2 = i3.signal_power_dB(S_total["MZIbdc{}_out2:0".format(ind2), "MZIbdc{}_in:0".format(ind2)])
 
     # Indices of the axes will be zero based
     ax_idx2 = ind2 + ax_idx
