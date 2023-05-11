@@ -38,6 +38,10 @@ class SplitterTree2Levels(i3.Circuit):
             "sp_0_0": self.splitter,
             "sp_1_0": self.splitter,
             "sp_1_1": self.splitter,
+            "sp_2_0": self.splitter,
+            "sp_2_1": self.splitter,
+            "sp_2_2": self.splitter,
+            "sp_2_3": self.splitter,
         }
         return insts
 
@@ -63,6 +67,34 @@ class SplitterTree2Levels(i3.Circuit):
                 rounding_algorithm=i3.SplineRoundingAlgorithm(adiabatic_angles=(15.0, 15.0)),
                 bend_radius=20,
             ),
+            i3.ConnectBend(
+                "sp_1_0:out2",
+                "sp_2_1:in1",
+                rounding_algorithm=i3.SplineRoundingAlgorithm(adiabatic_angles=(15.0, 15.0)),
+                bend_radius=20,
+            ),
+            i3.ConnectBend(
+                "sp_1_0:out1",
+                "sp_2_0:in1",
+                rounding_algorithm=i3.SplineRoundingAlgorithm(adiabatic_angles=(15.0, 15.0)),
+                bend_radius=20,
+            ),
+            i3.ConnectBend(
+                "sp_1_1:out2",
+                "sp_2_3:in1",
+                rounding_algorithm=i3.SplineRoundingAlgorithm(adiabatic_angles=(15.0, 15.0)),
+                bend_radius=20,
+            ),
+            i3.ConnectBend(
+                "sp_1_1:out1",
+                "sp_2_2:in1",
+                rounding_algorithm=i3.SplineRoundingAlgorithm(adiabatic_angles=(15.0, 15.0)),
+                bend_radius=20,
+            ),
+            i3.PlaceRelative("sp_2_0:in1", "sp_1_0:out1", (self.spacing_x, -self.spacing_y / 4)),
+            i3.PlaceRelative("sp_2_1:in1", "sp_1_0:out2", (self.spacing_x, self.spacing_y / 4)),
+            i3.PlaceRelative("sp_2_2:in1", "sp_1_1:out1", (self.spacing_x, -self.spacing_y / 4)),
+            i3.PlaceRelative("sp_2_3:in1", "sp_1_1:out2", (self.spacing_x, self.spacing_y / 4)),
         ]
         return specs
 
@@ -70,10 +102,14 @@ class SplitterTree2Levels(i3.Circuit):
     def _default_exposed_ports(self):
         exposed_ports = {
             "sp_0_0:in1": "in",
-            "sp_1_0:out1": "out1",
-            "sp_1_0:out2": "out2",
-            "sp_1_1:out1": "out3",
-            "sp_1_1:out2": "out4",
+            "sp_2_0:out1": "out1",
+            "sp_2_0:out2": "out2",
+            "sp_2_1:out1": "out3",
+            "sp_2_1:out2": "out4",
+            "sp_2_2:out1": "out5",
+            "sp_2_2:out2": "out6",
+            "sp_2_3:out1": "out7",
+            "sp_2_3:out2": "out8",
         }
         return exposed_ports
 
