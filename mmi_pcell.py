@@ -13,8 +13,8 @@ from si_fab.compactmodels.all import MMI1x2Model
 
 
 # Building the MMI PCell with properties that describe its geometry
-class MMI1x2(i3.PCell):
-    """MMI with 1 input and 2 outputs."""
+class MMI2x2(i3.PCell):
+    """MMI with 2 input and 2 outputs."""
 
     _name_prefix = "MMI1x2"
     trace_template = i3.TraceTemplateProperty(doc="Trace template of the access waveguide")
@@ -46,8 +46,15 @@ class MMI1x2(i3.PCell):
             )
             elems += i3.Wedge(
                 layer=core_layer,
-                begin_coord=(-taper_length, 0.0),
-                end_coord=(0.0, 0.0),
+                begin_coord=(-taper_length, -half_waveguide_spacing),
+                end_coord=(0.0, -half_waveguide_spacing),
+                begin_width=core_width,
+                end_width=taper_width,
+            )
+            elems += i3.Wedge(
+                layer=core_layer,
+                begin_coord=(-taper_length, half_waveguide_spacing),
+                end_coord=(0.0, half_waveguide_spacing),
                 begin_width=core_width,
                 end_width=taper_width,
             )
@@ -82,7 +89,13 @@ class MMI1x2(i3.PCell):
 
             ports += i3.OpticalPort(
                 name="in1",
-                position=(-taper_length, 0.0),
+                position=(-taper_length, -half_waveguide_spacing),
+                angle=180.0,
+                trace_template=trace_template,
+            )
+            ports += i3.OpticalPort(
+                name="in2",
+                position=(-taper_length, half_waveguide_spacing),
                 angle=180.0,
                 trace_template=trace_template,
             )
