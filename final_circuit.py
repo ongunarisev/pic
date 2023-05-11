@@ -4,12 +4,12 @@
 from siepic import all as pdk
 from ipkiss3 import all as i3
 from ipkiss3 import constants
-import numpy as np
-import pylab as plt
+from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
 from mzi_pcell_ybranch import MZI_YB
 from mzi_pcell_bdc import MZI_BDC
 from datetime import datetime
-from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
+import numpy as np
+import pylab as plt
 
 # We make a copy of the layer dictionary to freely modify it
 pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
@@ -207,11 +207,12 @@ for cell in circuit_cell_names:
                           alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
 
 # Layout
+filename = "EBeam_Vesnog.gds"
 cell_lv = top_cell.Layout()
 cell_lv.append(text_elems)
 cell_lv.visualize(annotate=True)
 cell_lv.visualize_2d()
-cell_lv.write_gdsii("EBeam_Vesnog_IPKISS.gds", layer_map=output_layer_map)
+cell_lv.write_gdsii(filename, layer_map=output_layer_map)
 
 # Circuit model
 cell_cm = top_cell.CircuitModel()
