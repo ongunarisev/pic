@@ -14,7 +14,7 @@ class MZI_YB(i3.Circuit):
     control_point1 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     control_point2 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
-
+    rounding_algorithm = i3.SplineRoundingAlgorithm(adiabatic_angles=(45, 45))
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
 
@@ -65,10 +65,10 @@ class MZI_YB(i3.Circuit):
                     ("yb_c2:opt1", "fgc_3:opt1", "yb_c2_opt1_to_fgc_1_opt1"),
                     ("yb_s2:opt2", "yb_c2:opt3", "yb_s2_opt2_to_yb_c2_opt3"),
                     ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt3_to_yb_c1_opt2"),
-                ]
-            ),
-            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1]),
-            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt2", control_points=[self.control_point2]),
+                ],
+            bend_radius=self.bend_radius, rounding_algorithm=self.rounding_algorithm),
+            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1], bend_radius=self.bend_radius, rounding_algorithm=self.rounding_algorithm),
+            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt2", control_points=[self.control_point2], bend_radius=self.bend_radius, rounding_algorithm=self.rounding_algorithm),
         ]
         return specs
 
