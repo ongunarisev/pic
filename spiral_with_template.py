@@ -27,54 +27,35 @@ RA = i3.SplineRoundingAlgorithm(adiabatic_angles=(45, 45))
 # Defining the trace template
 # --------------------------------------
 #
-# We take a basic template from the picazzo and derive a `TaperedWaveguideTemplate` version of it,
-# which does two things:
-#
-# * flaring out to a different width, with a specified taper length and minimum lengths for the narrow and wider
-#   waveguides.
-# * creating bends using a given rounding algorithm
+# We take a basic template from the picazzo and derive a `RoundedWaveguideTemplate` version of it,
+# which creates bends using a given rounding algorithm
 #
 
 wg_tmpl = pdk.SiWireWaveguideTemplate()
-wg_tmpl.Layout(
-    core_width=0.450,
-    cladding_width=2 * 2.0 + 0.45,
-)
+# Some parameters need to be defined in the Layout View
+wg_tmpl.Layout(core_width=0.5)
 
-wg_tmpl_wide = pdk.SiRibWaveguideTemplate()
-wg_tmpl_wide.Layout(core_width=0.85)
-
-tapered_wg_tmpl = i3.TaperedWaveguideTemplate(
-    name="tapered_wg_tmpl",
-    trace_template=wg_tmpl,
-    straight_trace_template=wg_tmpl_wide,
-)
-
-tapered_wg_tmpl.Layout(
-    bend_radius=5.0,  # shortest radius of curvature in the bend
-    rounding_algorithm=RA,  # use splines instead of circular arcs: smoother transition
-    taper_length=10.0,  # length of the taper between the regular waveguide and the expanded waveguide
-    # min_expanded_length=1.0, # minimum length of the expanded section. If shorter, don't expand
-)
-
+wg_tmpl_r = i3.RoundedWaveguideTemplate(trace_template=wg_tmpl)
+# Some parameters need to be defined in the Layout View
+wg_tmpl_r.Layout(bend_radius=5.0, rounding_algorithm=RA)
 ###############################################################################
 #
 # Defining a spiral
 # -----------------
-# Now we build the spiral using the TaperedWaveguideTemplate.
+# Now we build the spiral using the RoundedWaveguideTemplate.
 # By using this specific trace template, the resulting generated waveguide will be of the
-# :py:class:`i3.TaperedWaveguide <ipkiss3.all.TaperedWaveguide>` type.
+# :py:class:`i3.RoundedWaveguide <ipkiss3.all.TaperedWaveguide>` type.
 
 spiral = FixedLengthSpiral(
-    total_length=4000.0,
-    n_o_loops=4,
-    trace_template=tapered_wg_tmpl,
+    total_length=600.0,
+    n_o_loops=1,
+    trace_template=wg_tmpl_r,
 )
 spiral_lo = spiral.Layout(
-    incoupling_length=10.0,
-    spacing=6,
-    stub_direction="V",  # either H or V
-    growth_direction="V",
+    incoupling_length=5.0,
+    spacing=5,
+    stub_direction="H",  # either H or V
+    growth_direction="H",
 )
 
 spiral_lo.visualize(annotate=True)
