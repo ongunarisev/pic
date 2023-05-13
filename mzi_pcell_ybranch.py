@@ -2,11 +2,8 @@
 
 from siepic import all as pdk
 from ipkiss3 import all as i3
-from ipkiss.technology import get_technology
 import pylab as plt
 import numpy as np
-
-TECH = get_technology()
 
 
 class MZI_YB(i3.Circuit):
@@ -19,10 +16,10 @@ class MZI_YB(i3.Circuit):
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
 
     def _default_control_point1(self):
-        return (100.0, self.fgc_spacing_y - 50)
+        return -100.0, self.fgc_spacing_y - 50
 
     def _default_control_point2(self):
-        return (100.0, self.fgc_spacing_y + 50)
+        return -100.0, self.fgc_spacing_y + 50
 
     def _default_fgc(self):
         return pdk.EbeamGCTE1550()
@@ -35,6 +32,7 @@ class MZI_YB(i3.Circuit):
             "fgc_1": self.fgc,
             "fgc_2": self.fgc,
             "fgc_3": self.fgc,
+            # "fgc_4": self.fgc,
             "yb_s": self.splitter,
             "yb_s1": self.splitter,
             "yb_s2": self.splitter,
@@ -49,10 +47,11 @@ class MZI_YB(i3.Circuit):
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
             i3.PlaceRelative("fgc_3:opt1", "fgc_2:opt1", (0.0, fgc_spacing_y)),
-            i3.PlaceRelative("yb_s1:opt1", "yb_s:opt3", (20.0, -fgc_spacing_y / 8), angle=90),
-            i3.PlaceRelative("yb_s2:opt1", "yb_s:opt2", (20.0, fgc_spacing_y / 8), angle=-90),
-            i3.PlaceRelative("yb_c1:opt1", "yb_s:opt3", (20.0, -7*fgc_spacing_y / 8), angle=-90),
-            i3.PlaceRelative("yb_c2:opt1", "yb_s:opt2", (20.0, 7*fgc_spacing_y / 8), angle=90),
+            # i3.PlaceRelative("fgc_4:opt1", "fgc_3:opt1", (0.0, fgc_spacing_y)),
+            i3.PlaceRelative("yb_s1:opt1", "yb_s:opt3", (10.0, -8.0), angle=90),
+            i3.PlaceRelative("yb_s2:opt1", "yb_s:opt2", (10.0, 8.0), angle=-90),
+            i3.PlaceRelative("yb_c1:opt1", "yb_s:opt3", (10.0, 10 - fgc_spacing_y), angle=-90),
+            i3.PlaceRelative("yb_c2:opt1", "yb_s:opt2", (10.0, fgc_spacing_y - 10.0), angle=90),
             i3.Join("fgc_2:opt1", "yb_s:opt1"),
         ]
 
@@ -63,12 +62,12 @@ class MZI_YB(i3.Circuit):
                     ("yb_s:opt2", "yb_s2:opt1", "yb_s_opt3_to_yb_s2_opt1"),
                     ("yb_c1:opt1", "fgc_1:opt1", "yb_c1_opt1_to_fgc_1_opt1"),
                     ("yb_c2:opt1", "fgc_3:opt1", "yb_c2_opt1_to_fgc_1_opt1"),
-                    ("yb_s2:opt2", "yb_c2:opt3", "yb_s2_opt2_to_yb_c2_opt3"),
-                    ("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt3_to_yb_c1_opt2"),
+                    ("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt2_to_yb_c2_opt3"),
+                    ("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt3_to_yb_c1_opt2"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1]),
-            i3.ConnectManhattan("yb_s2:opt3", "yb_c2:opt2", "yb_s2_opt3_to_yb_c2_opt2", control_points=[self.control_point2]),
+            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", "yb_s1_opt2_to_yb_c1_opt3", control_points=[self.control_point1]),
+            i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3", "yb_s2_opt3_to_yb_c2_opt2", control_points=[self.control_point2]),
         ]
         return specs
 
