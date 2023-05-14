@@ -6,7 +6,7 @@ import pylab as plt
 import numpy as np
 
 
-class MZI_YB_calib(i3.Circuit):
+class MZI_YB_3port_calib(i3.Circuit):
     fgc_spacing_y = 127.0
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
 
@@ -76,7 +76,7 @@ class MZI_YB_calib(i3.Circuit):
 if __name__ == "__main__":
 
     # Layout
-    mzi = MZI_YB_calib(
+    mzi = MZI_YB_3port_calib(
         name="MZI",
         bend_radius=5.0,
     )

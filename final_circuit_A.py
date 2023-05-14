@@ -5,8 +5,10 @@ from siepic import all as pdk
 from ipkiss3 import all as i3
 from ipkiss3 import constants
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
-from mzi_pcell_ybranch import MZI_YB
+from mzi_pcell_ybranch_3port import MZI_YB_3port
 from mzi_pcell_bdc import MZI_BDC
+from mzi_pcell_ybranch_3port_calib import MZI_YB_3port_calib
+from mzi_pcell_bdc_calib import MZI_BDC_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
@@ -43,7 +45,7 @@ def define_control_point_mzi_yb(delay_length_tuple, bend_radius, cp_y_tup):
     """Defines a control point based on the desired delay_length for MZI with Y-branch"""
 
     def f(x):
-        device = MZI_YB(
+        device = MZI_YB_3port(
             control_point1=(x[0], cp_y_tup[0]),
             control_point2=(x[1], cp_y_tup[1]),
             bend_radius=bend_radius,
@@ -94,7 +96,7 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     )
 
     # Instantiate the MZI
-    mzi_yb = MZI_YB(
+    mzi_yb = MZI_YB_3port(
         name="MZI_YB{}".format(ind),
         control_point1=cp[0],
         control_point2=cp[1],
@@ -133,9 +135,9 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
 
 
 x0 += 40
-spacing_x = 120
+spacing_x = 100
 # The MZIs with BDC
-delay_lengths = [100.0, 200.0]
+delay_lengths = [50, 100.0]
 
 # Create the MZI sweep for MZIs with BDCs
 for ind, delay_length in enumerate(delay_lengths, start=1):
@@ -178,10 +180,30 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
     # Place the next circuit to the right of GDS layout
     x0 += spacing_x
 
+x0 += 30
+
+mzi_yb_cal = MZI_YB_3port_calib(name="MZI_YB_calibration")
+mzi_cell_name = 'MZIybC'
+meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
+insts[mzi_cell_name] = mzi_yb_cal
+specs.append(i3.Place(mzi_cell_name, (x0, y0)))
+meas_label_coord = mzi_yb_cal.measurement_label_position + (x0, y0)
+text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
+circuit_cell_names.append(mzi_cell_name)
+x0 += 80
+
+mzi_bdc_cal = MZI_BDC_calib(name="MZI_BDC_calibration")
+mzi_cell_name = 'MZIbdcC'
+meas_label = f"{mzi_bdc_cal.measurement_label_pretext}{mzi_cell_name}"
+insts[mzi_cell_name] = mzi_bdc_cal
+specs.append(i3.Place(mzi_cell_name, (x0, y0 + mzi_bdc_cal.fgc_spacing_y)))
+meas_label_coord = mzi_yb_cal.measurement_label_position + (x0, y0)
+text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
+circuit_cell_names.append(mzi_cell_name)
 
 # Create the final design with i3.Circuit
 top_cell = i3.Circuit(
-    name=f"EBeam_OngunArisev_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+    name=f"EBeam_OngunArisev_A_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
     insts=insts,
     specs=specs,
 )
@@ -190,12 +212,6 @@ top_cell = i3.Circuit(
 plt.rcParams['figure.figsize'] = [12, 8]
 plt.rcParams['figure.dpi'] = 100
 
-# Put the text labels
-test_test_elem = i3.Label(layer=i3.TECH.PPLAYER.TEXT, text="opt_in_TE_1550_device_Vesnog_MZIbdc2", coordinate=(0.0, 127.0),
-                      alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
-# elems += i3.Label(layer=i3.TECH.PPLAYER.TEXT, text="opt_in_TE_1550_device_Vesnog_MZIbdc2", coordinate=(0.0, 254.0),
-#                           alignment=(constants.TEXT.ALIGN.LEFT, constants.TEXT.ALIGN.BOTTOM), height=2)
-# Any number of layout primitives can be added here
 
 text_elems = []
 # For the GDS text elements for automated measurement

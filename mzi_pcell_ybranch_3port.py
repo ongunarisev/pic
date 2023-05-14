@@ -2,14 +2,11 @@
 
 from siepic import all as pdk
 from ipkiss3 import all as i3
-from ipkiss.technology import get_technology
 import pylab as plt
 import numpy as np
 
-TECH = get_technology()
 
-
-class MZI_YB(i3.Circuit):
+class MZI_YB_3port(i3.Circuit):
     fgc_spacing_y = 127.0
     control_point1 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
     control_point2 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
@@ -99,7 +96,7 @@ class MZI_YB(i3.Circuit):
 if __name__ == "__main__":
 
     # Layout
-    mzi = MZI_YB(
+    mzi = MZI_YB_3port(
         name="MZI",
         bend_radius=5.0,
     )

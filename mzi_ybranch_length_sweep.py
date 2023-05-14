@@ -4,14 +4,14 @@ from siepic import all as pdk
 from ipkiss3 import all as i3
 import numpy as np
 import pylab as plt
-from mzi_pcell_ybranch import MZI_YB
+from mzi_pcell_ybranch_3port import MZI_YB_3port
 
 
 def define_control_point(delay_length_tuple, bend_radius, cp_y_tup):
     """Defines a control point based on the desired delay_length"""
 
     def f(x):
-        device = MZI_YB(
+        device = MZI_YB_3port(
             control_point1=(x[0], cp_y_tup[0]),
             control_point2=(x[1], cp_y_tup[1]),
             bend_radius=bend_radius,
@@ -59,7 +59,7 @@ for ind, delay_length in enumerate(delay_lengths):
     )
 
     # Instantiate the MZI
-    mzi = MZI_YB(
+    mzi = MZI_YB_3port(
         name="MZI{}".format(ind),
         control_point1=cp[0],
         control_point2=cp[1],
