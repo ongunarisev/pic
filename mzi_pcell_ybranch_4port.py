@@ -23,13 +23,13 @@ class MZI_YB_4port(i3.Circuit):
         return 0.0, self.fgc_spacing_y
 
     def _default_control_point1(self):
-        return -100.0, self.fgc_spacing_y - 50
+        return -100.0, 3/2 * self.fgc_spacing_y
 
     def _default_control_point2(self):
-        return -100.0, self.fgc_spacing_y + 50
+        return -100.0, 5/2 * self.fgc_spacing_y
 
     def _default_control_point3(self):
-        return -100.0, self.fgc_spacing_y + 50
+        return -100.0, 1/2 * self.fgc_spacing_y
 
     def _default_fgc(self):
         return pdk.EbeamGCTE1550()
@@ -67,7 +67,7 @@ class MZI_YB_4port(i3.Circuit):
             i3.Join("yb_ss:opt3", "yb_s1:opt1"),
             i3.PlaceRelative("yb_s3:opt1", "yb_ss:opt2", (15, -15.0), angle=90),
             i3.PlaceRelative("yb_c2:opt1", "yb_s:opt2", (10.0, fgc_spacing_y - 10.0), angle=90),
-            i3.PlaceRelative("yb_c3:opt1", "yb_s3:opt1", (0.0,  - 3/2*fgc_spacing_y), angle=-90),
+            i3.PlaceRelative("yb_c3:opt1", "yb_s3:opt1", (0.0,  - 205), angle=-90),
             i3.Join("fgc_3:opt1", "yb_s:opt1"),
         ]
 
@@ -85,9 +85,9 @@ class MZI_YB_4port(i3.Circuit):
                     ("yb_s1:opt2", "yb_c1:opt3"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2"), #, control_points=[self.control_point1]),
-            i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3"), # , control_points=[self.control_point2]),
-            i3.ConnectManhattan("yb_s3:opt3", "yb_c3:opt2"), # , control_points=[self.control_point3]),
+            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[self.control_point1]),
+            i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3", control_points=[self.control_point2]),
+            i3.ConnectManhattan("yb_s3:opt3", "yb_c3:opt2", control_points=[self.control_point3]),
         ]
         return specs
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     fig = mzi_layout.visualize(annotate=True)
     fig.axes[0].scatter(mzi.control_point1.x, mzi.control_point1.y, color='m')
     fig.axes[0].scatter(mzi.control_point2.x, mzi.control_point2.y, color='m')
-    # mzi_layout.write_gdsii("mzi.gds")
+    mzi_layout.write_gdsii("mzi_pcell_ybranch.gds")
 
     # Circuit model
     my_circuit_cm = mzi.CircuitModel()
@@ -132,6 +132,7 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(wavelengths, i3.signal_power_dB(S_total["out1:0", "in:0"]), "-", linewidth=2.2, label="TE-out1")
     ax.plot(wavelengths, i3.signal_power_dB(S_total["out2:0", "in:0"]), "-", linewidth=2.2, label="TE-out2")
+    ax.plot(wavelengths, i3.signal_power_dB(S_total["out3:0", "in:0"]), "-", linewidth=2.2, label="TE-out3")
     ax.set_xlabel("Wavelength [um]", fontsize=16)
     ax.set_ylabel("Transmission [dB]", fontsize=16)
     ax.legend(fontsize=14, loc=4)
