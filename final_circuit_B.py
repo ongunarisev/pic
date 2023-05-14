@@ -6,6 +6,7 @@ from ipkiss3 import all as i3
 from ipkiss3 import constants
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
 from mzi_pcell_ybranch_4port import MZI_YB_4port
+from mzi_pcell_ybranch_4port_calib import MZI_YB_4port_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
@@ -124,6 +125,17 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
 # The MZIs with BDC
 delay_lengths = [100.0, 200.0]
 
+mzi_yb_cal = MZI_YB_4port_calib()
+mzi_cell_name = 'MZIyb4portC'
+meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
+insts[mzi_cell_name] = mzi_yb_cal
+size_info = mzi_yb_cal.Layout().size_info()
+x_pos = x0 + abs(size_info.west)
+y_pos = y0 + abs(size_info.south)
+specs.append(i3.Place(mzi_cell_name, (x_pos, y_pos)))
+meas_label_coord = mzi_yb_cal.measurement_label_position + (x_pos, y_pos)
+text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
+circuit_cell_names.append(mzi_cell_name)
 
 # Create the final design with i3.Circuit
 top_cell = i3.Circuit(
