@@ -85,7 +85,7 @@ class MZI_YB_4port(i3.Circuit):
                     ("yb_s1:opt2", "yb_c1:opt3"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[i3.H(203), i3.V(self.control_point2), i3.H(164)]),
+            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[i3.H(203), i3.V(self.control_point1), i3.H(164)]),
             i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3", control_points=[i3.H(290), i3.V(self.control_point2), i3.H(348)]),
             i3.ConnectManhattan("yb_s3:opt3", "yb_c3:opt2", control_points=[i3.H(105), i3.V(self.control_point3), i3.H(34)]),
         ]
@@ -95,7 +95,7 @@ class MZI_YB_4port(i3.Circuit):
         lv_instances = self.get_default_view(i3.LayoutView).instances
         return [
             lv_instances["yb_s1_opt3_to_yb_c1_opt2"],  # Long arm MZI 1
-            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Shor arm MZI 1
+            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Short arm MZI 1
             lv_instances["yb_s2_opt2_to_yb_c2_opt3"],  # Long arm MZI 2
             lv_instances["yb_s2_opt3_to_yb_c2_opt2"],  # Short arm MZI 2
             lv_instances["yb_s3_opt3_to_yb_c3_opt2"],  # Long arm MZI 3
