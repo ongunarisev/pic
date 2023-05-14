@@ -20,7 +20,7 @@ class MZI_YB_4port(i3.Circuit):
     measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
 
     def _default_measurement_label_position(self):
-        return 0.0, self.fgc_spacing_y
+        return 0.0, 2*self.fgc_spacing_y
 
     def _default_control_point1(self):
         return -100.0
