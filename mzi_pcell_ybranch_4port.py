@@ -8,9 +8,9 @@ import numpy as np
 
 class MZI_YB_4port(i3.Circuit):
     fgc_spacing_y = 127.0
-    control_point1 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
-    control_point2 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
-    control_point3 = i3.Coord2Property(doc="Point that the longer arm of the MZI has to go through")
+    control_point1 = i3.NumberProperty(doc="Point that the longer arm of the MZI has to go through")
+    control_point2 = i3.NumberProperty(doc="Point that the longer arm of the MZI has to go through")
+    control_point3 = i3.NumberProperty(doc="Point that the longer arm of the MZI has to go through")
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
 
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
@@ -23,13 +23,13 @@ class MZI_YB_4port(i3.Circuit):
         return 0.0, self.fgc_spacing_y
 
     def _default_control_point1(self):
-        return -100.0, 3/2 * self.fgc_spacing_y
+        return -100.0
 
     def _default_control_point2(self):
-        return -100.0, 5/2 * self.fgc_spacing_y
+        return -100.0
 
     def _default_control_point3(self):
-        return -100.0, 1/2 * self.fgc_spacing_y
+        return -100.0
 
     def _default_fgc(self):
         return pdk.EbeamGCTE1550()
@@ -85,19 +85,21 @@ class MZI_YB_4port(i3.Circuit):
                     ("yb_s1:opt2", "yb_c1:opt3"),
                 ]
             ),
-            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[self.control_point1]),
-            i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3", control_points=[self.control_point2]),
-            i3.ConnectManhattan("yb_s3:opt3", "yb_c3:opt2", control_points=[self.control_point3]),
+            i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[i3.H(203), i3.V(self.control_point2), i3.H(164)]),
+            i3.ConnectManhattan("yb_s2:opt2", "yb_c2:opt3", control_points=[i3.H(290), i3.V(self.control_point2), i3.H(348)]),
+            i3.ConnectManhattan("yb_s3:opt3", "yb_c3:opt2", control_points=[i3.H(105), i3.V(self.control_point3), i3.H(34)]),
         ]
         return specs
 
     def get_connector_instances(self):
         lv_instances = self.get_default_view(i3.LayoutView).instances
         return [
-            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Long arm MZI 1
-            lv_instances["yb_s1_opt3_to_yb_c1_opt2"],
-            lv_instances["yb_s2_opt3_to_yb_c2_opt2"],  # Long arm MZI 2
-            lv_instances["yb_s2_opt2_to_yb_c2_opt3"]
+            lv_instances["yb_s1_opt3_to_yb_c1_opt2"],  # Long arm MZI 1
+            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Shor arm MZI 1
+            lv_instances["yb_s2_opt2_to_yb_c2_opt3"],  # Long arm MZI 2
+            lv_instances["yb_s2_opt3_to_yb_c2_opt2"],  # Short arm MZI 2
+            lv_instances["yb_s3_opt3_to_yb_c3_opt2"],  # Long arm MZI 3
+            lv_instances["yb_s3_opt2_to_yb_c3_opt3"],  # Short arm MZI 3
         ]
 
     def _default_exposed_ports(self):
@@ -119,8 +121,8 @@ if __name__ == "__main__":
     )
     mzi_layout = mzi.Layout()
     fig = mzi_layout.visualize(annotate=True)
-    fig.axes[0].scatter(mzi.control_point1.x, mzi.control_point1.y, color='m')
-    fig.axes[0].scatter(mzi.control_point2.x, mzi.control_point2.y, color='m')
+    # fig.axes[0].scatter(mzi.control_point1.x, mzi.control_point1.y, color='m')
+    # fig.axes[0].scatter(mzi.control_point2.x, mzi.control_point2.y, color='m')
     mzi_layout.write_gdsii("mzi_pcell_ybranch.gds")
 
     # Circuit model
