@@ -12,6 +12,11 @@ class WBGCircuit(i3.Circuit):
     wbg = i3.PCellProperty(doc="Unit cell of the WBG")
     fiber_coupler_pitch = i3.PositiveNumberProperty(doc="Distance between fiber grating couplers", default=127.0)
     bend_radius = i3.PositiveNumberProperty(doc="Bend radius of the connecting waveguides", default=10.0)
+    measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
+    measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
+
+    def _default_measurement_label_position(self):
+        return 0.0, 2*127
 
     def _default_insts(self):
         fc = pdk.EbeamGCTE1550()
