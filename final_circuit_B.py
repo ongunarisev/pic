@@ -125,7 +125,7 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
 # The MZIs with BDC
 delay_lengths = [100.0, 200.0]
 
-mzi_yb_cal = MZI_YB_4port_calib()
+mzi_yb_cal = MZI_YB_4port_calib(name="MZI_YB_4port_calibration")
 mzi_cell_name = 'MZIyb4portC'
 meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
 insts[mzi_cell_name] = mzi_yb_cal
