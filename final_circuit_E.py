@@ -6,6 +6,7 @@ from ipkiss3 import all as i3
 from ipkiss3 import constants
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
 from ring_resonator_cell import RingResonator
+from ring_resonator_calib_cell import RingResonator_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
@@ -40,12 +41,11 @@ circuit_cell_names = []  # Constituent circuit cell names list
 
 # Create the MZI sweep for MZIs with Y-branches
 for ind, coupling_length in enumerate(coupling_lengths, start=1):
-    hr = pdk.EbeamDCHalfringStraight(coupler_length=coupling_length)
+    rr = pdk.EbeamAddDropSymmStraight(coupler_length=coupling_length)
     # Instantiate the MZI
     rr = RingResonator(
         name="Ring_Resonator_cl{:.2f}".format(coupling_length),
-        half_ring1=hr,
-        half_ring2=hr,
+        ring=rr,
         bend_radius=bend_radius,
     )
 
@@ -66,16 +66,24 @@ for ind, coupling_length in enumerate(coupling_lengths, start=1):
     # Place the next circuit to the right of GDS layout
     x0 += size_info.width + x_spacing
 
+rr_cal = RingResonator_calib(
+    name="Ring_Resonator_calibration",
+    bend_radius=bend_radius,
+)
 
-# mzi_yb_cal = MZI_YB_calib(name="MZI_YB_calibration")
-# mzi_cell_name = 'MZIybC'
-# meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
-# insts[mzi_cell_name] = mzi_yb_cal
-# specs.append(i3.Place(mzi_cell_name, (x0, y0)))
-# meas_label_coord = mzi_yb_cal.measurement_label_position + (x0, y0)
-# text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
-# circuit_cell_names.append(mzi_cell_name)
-# x0 += 80
+# Add the MZI to the instances dict and place it
+rr_cell_name = "RRc"
+insts[rr_cell_name] = rr_cal
+
+# Put the measurement label
+meas_label = f"{rr_cal.measurement_label_pretext}{rr_cell_name}"
+size_info = rr_cal.Layout().size_info()
+x_pos = x0 + abs(size_info.west)
+y_pos = y0 + abs(size_info.south) + rr_cal.fgc_spacing_y
+specs.append(i3.Place(rr_cell_name, (x_pos, y_pos)))
+meas_label_coord = rr_cal.measurement_label_position + (x_pos, y_pos)
+text_label_dict[rr_cell_name] = [meas_label, meas_label_coord]
+circuit_cell_names.append(rr_cell_name)
 
 # Create the final design with i3.Circuit
 top_cell = i3.Circuit(
@@ -112,24 +120,27 @@ wavelengths = np.linspace(1.52, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
 # Plotting
-# fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
-#
-# for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
-#     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
-#     # not counting the ones due to wavelength
-#     tr_out1 = i3.signal_power_dB(S_total["MZIyb{}_out1:0".format(ind), "MZIyb{}_in:0".format(ind)])
-#     tr_out2 = i3.signal_power_dB(S_total["MZIyb{}_out2:0".format(ind), "MZIyb{}_in:0".format(ind)])
-#
-#     # Indices of the axes will be zero based
-#     ax_idx = ind - 1
-#     axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI_YB{}:out1".format(ind))
-#     axs[ax_idx].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI_YB{}:out2".format(ind))
-#
-#     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
-#     axs[ax_idx].set_title("MZI_YB{} - Delay length {} um".format(ind, delay_length), fontsize=16)
-#     axs[ax_idx].legend(fontsize=14, loc=4)
-#
-# axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
-# plt.show()
+fig, axs = plt.subplots(coupling_lengths.size, sharex="all", figsize=(12, 28))
+
+for ind, coupling_length in enumerate(coupling_lengths, start=1):
+    # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
+    # not counting the ones due to wavelength
+    circ = "RRcl{}".format(ind)
+    tr_pass = i3.signal_power_dB(S_total["{}_pass:0".format(circ), "{}_in:0".format(circ)])
+    tr_drop = i3.signal_power_dB(S_total["{}_drop:0".format(circ), "{}_in:0".format(circ)])
+    tr_add = i3.signal_power_dB(S_total["{}_add:0".format(circ), "{}_in:0".format(circ)])
+
+    # Indices of the axes will be zero based
+    ax_idx = ind - 1
+    axs[ax_idx].plot(wavelengths, tr_pass, "-", linewidth=2.2, label="TE - RR{}:pass".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_drop, "-", linewidth=2.2, label="TE - RR{}:drop".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_add, "-", linewidth=2.2, label="TE - RR{}:add".format(ind))
+
+    axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
+    axs[ax_idx].set_title("Ring Resonator {} - Coupling length {} um".format(ind, coupling_length), fontsize=16)
+    axs[ax_idx].legend(fontsize=14, loc=4)
+
+axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
+plt.show()
 
 print("Done")

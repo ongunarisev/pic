@@ -10,9 +10,7 @@ class RingResonator(i3.Circuit):
 
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
-    half_ring1 = i3.ChildCellProperty(doc="Ring resonator 1")
-    half_ring2 = i3.ChildCellProperty(doc="Ring resonator 2")
-    dir_coupler = i3.ChildCellProperty(doc="PCell for the directional coupler")
+    ring = i3.ChildCellProperty(doc="Ring resonator")
     fgc_spacing_y = i3.PositiveNumberProperty(default=127.0, doc="Fiber separation")
     measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
     measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
@@ -29,11 +27,9 @@ class RingResonator(i3.Circuit):
     def _default_dir_coupler(self):
         return pdk.EbeamBDCTE1550()
 
-    def _default_half_ring1(self):
-        return pdk.EbeamDCHalfringStraight()
+    def _default_ring(self):
+        return pdk.EbeamAddDropSymmStraight()
 
-    def _default_half_ring2(self):
-        return pdk.EbeamDCHalfringStraight()
 
     def _default_insts(self):
         insts = {
@@ -41,30 +37,28 @@ class RingResonator(i3.Circuit):
             "fgc_2": self.fgc,
             "fgc_3": self.fgc,
             "fgc_4": self.fgc,
-            "rr1": self.half_ring1,
-            "rr2": self.half_ring2,
+            "rr": self.ring
         }
         return insts
 
     def _default_specs(self):
-        size_info = self.half_ring1.Layout().size_info()
+        size_info = self.ring.Layout().size_info()
         rel_y_place = -(self.fgc_spacing_y - size_info.width) / 2
         specs = [
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, self.fgc_spacing_y)),
             i3.PlaceRelative("fgc_3:opt1", "fgc_2:opt1", (0.0, self.fgc_spacing_y)),
             i3.PlaceRelative("fgc_4:opt1", "fgc_3:opt1", (0.0, self.fgc_spacing_y)),
-            i3.PlaceRelative("rr1:pin1", "fgc_3:opt1", (8.0, rel_y_place), angle=90),
-            i3.Join("rr1:pin2", "rr2:pin3")
+            i3.PlaceRelative("rr:pin1", "fgc_3:opt1", (8.0, rel_y_place), angle=90),
         ]
 
         specs += [
             i3.ConnectManhattan(
                 [
-                    ("fgc_3:opt1", "rr1:pin1"),
-                    ("rr1:pin4", "fgc_2:opt1"),
-                    ("rr2:pin4", "fgc_4:opt1"),
-                    ("rr2:pin1", "fgc_1:opt1"),
+                    ("fgc_3:opt1", "rr:pin1"),
+                    ("rr:pin4", "fgc_2:opt1"),
+                    ("rr:pin2", "fgc_4:opt1"),
+                    ("rr:pin3", "fgc_1:opt1"),
                 ]
             ),
         ]
