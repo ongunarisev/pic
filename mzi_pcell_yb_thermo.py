@@ -3,7 +3,7 @@
 from siepic import all as pdk
 from ipkiss3 import all as i3
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
-from bond_pads import BondPad, pplayer_map
+from bond_pads import BondPad, Heater, pplayer_map
 import pylab as plt
 import numpy as np
 
@@ -12,6 +12,7 @@ class MZI_YB_thermo(i3.Circuit):
     bend_radius = i3.PositiveNumberProperty(default=5.0, doc="Bend radius of the waveguides")
     heater_width = i3.PositiveNumberProperty(default=4.0, doc="Heater width")
     heater_length = i3.PositiveNumberProperty(default=100.0, doc="Heater length in microns")
+    heater_size = i3.Coord2Property(default=(4.0, 100.0), doc="Heater size")
     arm_spacing = i3.PositiveNumberProperty(default=20, doc="MZI arms spacing")
     fgc = i3.ChildCellProperty(doc="PCell for the fiber grating coupler")
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
@@ -20,6 +21,8 @@ class MZI_YB_thermo(i3.Circuit):
     measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
     measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
     bond_pad = BondPad(name="Metal Contact")
+    heater = Heater(name="Heater")
+
 
     def _default_measurement_label_position(self):
         return 0.0, self.fgc_spacing_y
@@ -38,22 +41,29 @@ class MZI_YB_thermo(i3.Circuit):
             "yb_c1": self.splitter,
             "bp_1": self.bond_pad,
             "bp_2": self.bond_pad,
-            # "bp_3": self.bond_pad,
-            # "bp_4": self.bond_pad,
+            "heater": self.heater,
         }
         return insts
 
     def _default_specs(self):
         fgc_spacing_y = self.fgc_spacing_y
         mzi_splitter_x = 150
+        # Instantiate the heater
+        hl = self.heater.Layout(size=(self.heater_width, self.heater_length))
+        x_pos = mzi_splitter_x + self.arm_spacing / 2
+        y_pos = fgc_spacing_y / 2
+        # y_pos = 0
         specs = [
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
             # Adhere by the placement rules to avoid metal burning damaging the fiber array
             i3.PlaceRelative("yb_s1:opt1", "fgc_2:opt1", (mzi_splitter_x, 40.0), angle=90),
             i3.PlaceRelative("yb_c1:opt1", "fgc_1:opt1", (mzi_splitter_x, -40.0), angle=-90),
+            # Place the electrical bond pads
             i3.Place("bp_1", (350, 0)),
             i3.PlaceRelative("bp_2", "bp_1", (0, 125)),
+            # Place the heater
+            i3.Place("heater", (x_pos, y_pos))
         ]
 
         specs += [

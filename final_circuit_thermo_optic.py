@@ -15,11 +15,12 @@ pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.T
 output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
 
 # Parameters for the MZI Y-branch sweep
-delay_lengths_tuples = [(50.0, 100.0), (150.0, 200.0)]
+parameters = [50.0]
 bend_radius = 5.0
-x0 = 40.0
-y0 = 20.0
-spacing_x = 80.0
+x0 = 5.0
+y0 = 5.0
+x_spacing = 10
+y_spacing = 10
 
 insts = dict()
 specs = []
@@ -35,26 +36,30 @@ text_label_dict = {}  # Text labels dictionary for automated measurement labels
 circuit_cell_names = []  # Constituent circuit cell names list
 
 # Create the MZI sweep for MZIs with Y-branches
-for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
+for ind, delay_length in enumerate(parameters, start=1):
     # Instantiate the MZI
-    mzi_yb = MZI_YB_thermo(
-        name="MZI_YB{}".format(ind),
+    mzi_thermo = MZI_YB_thermo(
+        name="MZI_thermo{}".format(ind),
         bend_radius=bend_radius,
     )
 
     # Add the MZI to the instances dict and place it
     mzi_cell_name = "MZIyb{}".format(ind)
-    insts[mzi_cell_name] = mzi_yb
-    specs.append(i3.Place(mzi_cell_name, (x0, y0)))
+    insts[mzi_cell_name] = mzi_thermo
+    size_info = mzi_thermo.Layout().size_info()
+    x_pos = x0 + abs(size_info.west)
+    y_pos = y0 + abs(size_info.south)
+    specs.append(i3.Place(mzi_cell_name, (x_pos, y_pos)))
 
     # Put the measurement label
-    meas_label = f"{mzi_yb.measurement_label_pretext}{mzi_cell_name}"
-    meas_label_coord = mzi_yb.measurement_label_position + (x0, y0)
+    meas_label = f"{mzi_thermo.measurement_label_pretext}{mzi_cell_name}"
+    meas_label_coord = mzi_thermo.measurement_label_position + (x0, y0)
     text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
     circuit_cell_names.append(mzi_cell_name)
 
     # Place the next circuit to the right of GDS layout
-    x0 += spacing_x
+    x0 += x_spacing + x_pos
+    y0 += y_spacing + y_pos
 
 # Create the final design with i3.Circuit
 top_cell = i3.Circuit(
@@ -93,7 +98,7 @@ S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 # Plotting
 fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
 
-for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
+for ind, delay_length in enumerate(parameters, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
     tr_out1 = i3.signal_power_dB(S_total["MZIyb{}_out1:0".format(ind), "MZIyb{}_in:0".format(ind)])
