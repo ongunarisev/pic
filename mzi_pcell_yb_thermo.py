@@ -3,7 +3,7 @@
 from siepic import all as pdk
 from ipkiss3 import all as i3
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
-from bond_pads import BondPad, Heater, pplayer_map
+from bond_pads import BondPad, Heater, pplayer_map, wire_template
 import pylab as plt
 import numpy as np
 
@@ -18,11 +18,16 @@ class MZI_YB_thermo(i3.Circuit):
     splitter = i3.ChildCellProperty(doc="PCell for the Y-Branch")
     fgc_spacing_y = i3.PositiveNumberProperty(default=127.0, doc="Fiber separation")
     bond_pad_spacing_y = i3.PositiveNumberProperty(default=125.0, doc="Electrical bond pad separation")
+    bond_pad_GC_dist = i3.PositiveNumberProperty(default=350.0, doc="Bond pad GC distance")
     measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
     measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
-    bond_pad = BondPad(name="Metal Contact")
+    elec_meas_label_position = i3.Coord2Property(doc="Placement of automated measurement label for electrical interface")
+    bond_pad1 = BondPad(name="Bond_Pad_1")
+    bond_pad2 = BondPad(name="Bond_Pad_2")
     heater = Heater(name="Heater")
 
+    def _default_elec_meas_label_position(self):
+        return self.bond_pad2.measurement_label_position + (self.bond_pad_GC_dist, self.bond_pad_spacing_y)
 
     def _default_measurement_label_position(self):
         return 0.0, self.fgc_spacing_y
@@ -39,8 +44,8 @@ class MZI_YB_thermo(i3.Circuit):
             "fgc_2": self.fgc,
             "yb_s1": self.splitter,
             "yb_c1": self.splitter,
-            "bp_1": self.bond_pad,
-            "bp_2": self.bond_pad,
+            "bp_1": self.bond_pad1,
+            "bp_2": self.bond_pad2,
             "heater": self.heater,
         }
         return insts
@@ -52,7 +57,7 @@ class MZI_YB_thermo(i3.Circuit):
         hl = self.heater.Layout(size=(self.heater_width, self.heater_length))
         x_pos = mzi_splitter_x + self.arm_spacing / 2
         y_pos = fgc_spacing_y / 2
-        # y_pos = 0
+
         specs = [
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
@@ -60,8 +65,8 @@ class MZI_YB_thermo(i3.Circuit):
             i3.PlaceRelative("yb_s1:opt1", "fgc_2:opt1", (mzi_splitter_x, 40.0), angle=90),
             i3.PlaceRelative("yb_c1:opt1", "fgc_1:opt1", (mzi_splitter_x, -40.0), angle=-90),
             # Place the electrical bond pads
-            i3.Place("bp_1", (350, 0)),
-            i3.PlaceRelative("bp_2", "bp_1", (0, 125)),
+            i3.Place("bp_1", (self.bond_pad_GC_dist, 0)),
+            i3.Place("bp_2", (self.bond_pad_GC_dist, self.bond_pad_spacing_y)),
             # Place the heater
             i3.Place("heater", (x_pos, y_pos))
         ]
@@ -71,6 +76,10 @@ class MZI_YB_thermo(i3.Circuit):
             i3.ConnectManhattan("yb_c1:opt1", "fgc_1:opt1", control_points=[i3.V(15)]),
             i3.ConnectManhattan("yb_s1:opt3", "yb_c1:opt2", control_points=[i3.V(mzi_splitter_x - self.arm_spacing/2)]),
             i3.ConnectManhattan("yb_s1:opt2", "yb_c1:opt3", control_points=[i3.V(mzi_splitter_x + self.arm_spacing/2)]),
+            i3.ConnectManhattan("bp_1:e_out", "heater:e_in1", rounding_algorithm=None,
+                                trace_template=wire_template, control_points=[i3.V(225)]),
+            i3.ConnectManhattan("bp_2:e_out", "heater:e_in2", rounding_algorithm=None,
+                                trace_template=wire_template, control_points=[i3.V(225)]),
         ]
         return specs
 
