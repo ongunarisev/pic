@@ -5,13 +5,11 @@ from siepic import all as pdk
 from ipkiss3 import all as i3
 from ipkiss3 import constants
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
-from mzi_pcell_yb_thermo import MZI_YB_thermo
+from mzi_pcell_yb_thermo import MZI_YB_thermo, pplayer_map
 from datetime import datetime
 import numpy as np
 import pylab as plt
 
-# We make a copy of the layer dictionary to freely modify it
-pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
 # Write the content to be written on WG_P6NM on Silicon layer directly
 pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.TECH.PROCESS.WG, i3.TECH.PURPOSE.DRAWING]
 output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)

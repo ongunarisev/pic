@@ -1,13 +1,21 @@
-from technologies import silicon_photonics  # noqa: F401
-from picazzo3.fibcoup.curved import FiberCouplerCurvedGrating
+from siepic import all as pdk
 from ipkiss3 import all as i3
-import matplotlib.pyplot as plt
+# https://docs.lucedaphotonics.com/guides/technology/
+# The PDK does not have these layers, so I add them manually
+i3.TECH.PROCESS.M1 = i3.ProcessLayer("Metal1", "M1")
+i3.TECH.PROCESS.M2 = i3.ProcessLayer("Metal2", "M2")
+# We make a copy of the layer dictionary to freely modify it
+pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
+pplayer_map[i3.TECH.PROCESS.M1, i3.TECH.PURPOSE.DRAWING] = (11, 0)
+pplayer_map[i3.TECH.PROCESS.M2, i3.TECH.PURPOSE.DRAWING] = (12, 0)
+pplayer_m2 = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M2, purpose=i3.TECH.PURPOSE.DRAWING)
+pplayer_m1 = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M1, purpose=i3.TECH.PURPOSE.DRAWING)
 
 
 class BondPad(i3.PCell):
     class Layout(i3.LayoutView):
-        size = i3.Size2Property(default=(50.0, 50.0), doc="Size of the bondpad")
-        metal_layer = i3.LayerProperty(default=i3.TECH.PPLAYER.M1.LINE, doc="Metal used for the bondpad")
+        size = i3.Size2Property(default=(75.0, 75.0), doc="Size of the bondpad")
+        metal_layer = i3.LayerProperty(default=i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M2, purpose=i3.TECH.PURPOSE.DRAWING), doc="Metal used for the bondpad")
 
         def _generate_elements(self, elems):
             elems += i3.Rectangle(layer=self.metal_layer, box_size=self.size)
@@ -22,35 +30,3 @@ class BondPad(i3.PCell):
                 angle=0,  # adding dummy angles so that the connector functions work
             )
             return ports
-
-# Placing the components in a circuit
-bp = BondPad()
-bp_layout = bp.Layout(size=(50, 50))
-gr = FiberCouplerCurvedGrating()
-
-control_points = [(-40, 20), (50, 0), (100, -50)]
-
-wire_template = i3.ElectricalWireTemplate()
-wire_template.Layout(width=5.0, layer=bp_layout.metal_layer)
-
-circuit = i3.Circuit(
-    insts={"gr": gr, "gr2": gr, "b1": bp, "b2": bp},
-    specs=[
-        i3.Place("gr", position=(0, 0)),
-        i3.Place("gr2", position=(100, 0)),
-        i3.Place("b1", position=(-75, 0)),
-        i3.Place("b2", position=(+150, 0)),
-        i3.ConnectManhattan(
-            "b1:m1",
-            "b2:m1",
-            control_points=control_points,
-            rounding_algorithm=None,
-            trace_template=wire_template,
-        ),
-    ],
-)
-
-circuit_layout = circuit.Layout()
-circuit_layout.visualize(show=False)
-plt.scatter([cp[0] for cp in control_points], [cp[1] for cp in control_points], c="C1", s=80, marker="x")
-plt.show()
