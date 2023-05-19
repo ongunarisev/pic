@@ -100,7 +100,7 @@ wavelengths = np.linspace(1.52, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
 # Plotting
-fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
+fig, axs = plt.subplots(len(parameters), sharex="all", figsize=(12, 18))
 
 for ind, parameter in enumerate(parameters, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
@@ -109,7 +109,7 @@ for ind, parameter in enumerate(parameters, start=1):
 
     # Indices of the axes will be zero based
     ax_idx = ind - 1
-    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI heater{}:out1".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI heater{}:out".format(ind))
 
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx].set_title("MZI heater {} - arm spacing {} um".format(ind, parameter), fontsize=16)
