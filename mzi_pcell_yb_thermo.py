@@ -22,6 +22,7 @@ class MZI_YB_thermo(i3.Circuit):
     measurement_label_position = i3.Coord2Property(doc="Placement of automated measurement label")
     measurement_label_pretext = "opt_in_TE_1550_device_Vesnog_"
     elec_meas_label_position = i3.Coord2Property(doc="Placement of automated measurement label for electrical interface")
+    second_heater = i3.BoolProperty(default=False, doc="Place two heater to have symmetry in both arms")
     bond_pad1 = BondPad(name="Bond_Pad_1")
     bond_pad2 = BondPad(name="Bond_Pad_2")
     heater = Heater(name="Heater")
@@ -48,6 +49,9 @@ class MZI_YB_thermo(i3.Circuit):
             "bp_2": self.bond_pad2,
             "heater": self.heater,
         }
+        if self.second_heater:
+            insts["heater2"] = self.heater
+
         return insts
 
     def _default_specs(self):
@@ -70,6 +74,9 @@ class MZI_YB_thermo(i3.Circuit):
             # Place the heater
             i3.Place("heater", (x_pos, y_pos))
         ]
+
+        if self.second_heater:
+            specs += [i3.Place("heater2", (x_pos - self.arm_spacing, y_pos))]
 
         specs += [
             i3.ConnectManhattan("fgc_2:opt1", "yb_s1:opt1", control_points=[i3.V(15)]),
