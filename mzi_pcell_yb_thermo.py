@@ -90,6 +90,19 @@ class MZI_YB_thermo(i3.Circuit):
         }
         return exposed_ports
 
+    class CircuitModel(i3.CircuitModelView):
+        def _generate_model(self):
+            # Remove the electrical layers
+            to_remove = ['bp_1', 'bp_2', 'heater']
+            new_instances = {}
+            netlist_view = self.netlist_view
+            for key, value in netlist_view.netlist.instances.items():
+                flag = map(lambda x: x in key, to_remove)
+                if not any(flag):
+                    new_instances[key] = value
+            netlist_view.netlist.instances = new_instances
+            return i3.HierarchicalModel.from_netlistview(netlist_view)
+
 
 if __name__ == "__main__":
 
@@ -100,9 +113,9 @@ if __name__ == "__main__":
     )
     output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
     mzi_layout = mzi.Layout()
-    # fig = mzi_layout.visualize(annotate=True)
-    # mzi_layout.visualize_2d()
-    # mzi_layout.write_gdsii("mzi_heater.gds", layer_map=output_layer_map)
+    fig = mzi_layout.visualize(annotate=True)
+    mzi_layout.visualize_2d()
+    mzi_layout.write_gdsii("mzi_heater.gds", layer_map=output_layer_map)
 
     # Circuit model
     my_circuit_cm = mzi.CircuitModel()

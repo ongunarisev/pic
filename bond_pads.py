@@ -18,21 +18,14 @@ pplayer_m1 = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M1, purpose=i3.TECH.
 
 class ElectricalWireTemplateWModel(i3.ElectricalWireTemplate):
     class Netlist(i3.NetlistFromLayout):
-        # def _get_netlist_template(self):
-        #     pass
-        # pass
-        def _generate_netlist(self, nl):
-            # Here you will specify which terms, nets and instances
-            # build up your netlist
-            return nl
+        pass
 
     class CircuitModel(i3.CircuitModelView):
         pass
 
-
 # Generate the wires for interconnects. These can be used with ConnectManhattan with rounding_algorithm set to None
 wire_thickness = 10  # Wire thickness in microns
-wire_template = ElectricalWireTemplateWModel()
+wire_template = i3.ElectricalWireTemplate()
 wire_template.Layout(width=wire_thickness, layer=pplayer_m2)
 
 
@@ -42,15 +35,10 @@ class BondPad(i3.PCell):
     measurement_label_pretext = "elec_device_Vesnog_"
 
     class Netlist(i3.NetlistFromLayout):
-        def _generate_netlist(self, nl):
-            # Here you will specify which terms, nets and instances
-            # build up your netlist
-            return nl
+        pass
 
     class CircuitModel(i3.CircuitModelView):
         pass
-        # def _generate_model(self):
-        #     return i3.HierarchicalModel.from_netlistview(self.netlist_view)
 
     class Layout(i3.LayoutView):
         size = i3.Size2Property(default=(75.0, 75.0), doc="Size of the bondpad")
@@ -76,13 +64,7 @@ class BondPad(i3.PCell):
 class Heater(i3.PCell):
     """200 nm TiW thickness, bulk resistivity 0.61 uOhm*m, sheet resistance 3.04 Ohm / sq"""
     class Netlist(i3.NetlistFromLayout):
-        # def _get_netlist_template(self):
-        #     pass
-        # pass
-        def _generate_netlist(self, nl):
-            # Here you will specify which terms, nets and instances
-            # build up your netlist
-            return nl
+        pass
 
     class CircuitModel(i3.CircuitModelView):
         pass
