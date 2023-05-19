@@ -1,6 +1,7 @@
 # Copyright (C) 2020 Luceda Photonics
 
 from siepic import all as pdk
+from siepic import technology
 from ipkiss3 import all as i3
 from ipkiss.process.layer_map import GenericGdsiiPPLayerOutputMap
 from bond_pads import BondPad, Heater, pplayer_map, wire_template

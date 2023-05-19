@@ -54,11 +54,14 @@ stack_air = MaterialStack(name="all air",
 
 stack_metal = MaterialStack(name="metal",
                                 materials_heights=[
+                                    (air, 0.5),
                                     (metal, 0.2),
                                     (air, 0.3),
                                     (oxide, 0.5),
                                     (air, 1.0),
-                                ])
+                                ],
+                                display_style=DisplayStyle(color=COLOR_SILVER)
+                            )
 
 oxide_dep = i3.ProcessLayer(name="oxide", extension="OX")
 oxide_etch = i3.ProcessLayer(name="oxide etch", extension="NOX")
@@ -77,17 +80,18 @@ vfab = VFabricationProcessFlow(
         metalization: False,
     },
     process_to_material_stack_map=[
-        ((0, 0, 0), stack_air),
-        ((0, 1, 0), stack_air),
-        ((1, 0, 0), stack_oxide),
-        ((1, 1, 0), stack_air),
-        ((0, 0, 1), stack_metal)
+        ((0, 0, 0), stack_air),    # When we have nothing (the background)
+        ((1, 0, 0), stack_oxide),  # When we only have the first layer
+        ((1, 1, 0), stack_air),  # When we have the first two layers
+        ((1, 1, 1), stack_metal),  # When we have all the layers
+        ((1, 0, 1), stack_metal),  # When we only have the first and last layer
     ]
 )
 
 # visualize virtual fabrication of the layout: top-down and cross-section
 
 donut_lo.visualize_2d(process_flow=vfab)
-xs = donut_lo.cross_section(cross_section_path=i3.Shape([(0.0, 20.0), (0.0, -20.0)]),
+# The cross-section start/end points in x and y coordinates
+xs = donut_lo.cross_section(cross_section_path=i3.Shape([(-20.0, 0.0), (20.0, 0.0)]),
                             process_flow=vfab)
 xs.visualize()
