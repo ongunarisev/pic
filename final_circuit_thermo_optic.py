@@ -15,10 +15,10 @@ pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.T
 output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
 
 # Parameters for the MZI Y-branch sweep
-parameters = [50.0]
+parameters = [20.0, 50.0]
 bend_radius = 5.0
 x0 = 5.0
-y0 = 5.0
+y0 = 2.5
 x_spacing = 10
 y_spacing = 10
 
@@ -26,7 +26,7 @@ insts = dict()
 specs = []
 
 # Create the floor plan for EdX design area
-floorplan = pdk.FloorPlan(name="FLOORPLAN", size=(470.0, 440.0))
+floorplan = pdk.FloorPlan(name="FLOORPLAN", size=(440.0, 470.0))
 
 # Add the floor plan to the instances dict and place it at (0.0, 0.0)
 insts["floorplan"] = floorplan
@@ -41,6 +41,7 @@ for ind, parameter in enumerate(parameters, start=1):
     mzi_thermo = MZI_YB_thermo(
         name="MZI_thermo{}".format(ind),
         bend_radius=bend_radius,
+        arm_spacing=parameter,
     )
 
     # Add the MZI to the instances dict and place it
@@ -62,8 +63,7 @@ for ind, parameter in enumerate(parameters, start=1):
     meas_label_coord = mzi_thermo.elec_meas_label_position + (x_pos, y_pos)
     text_label_dict[f"{mzi_cell_name}_e"] = [meas_label, meas_label_coord]
     # Place the next circuit to the right of GDS layout
-    x0 += x_spacing + x_pos
-    y0 += y_spacing + y_pos
+    y0 += 250
 
 # Create the final design with i3.Circuit
 top_cell = i3.Circuit(
@@ -105,16 +105,14 @@ fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
 for ind, parameter in enumerate(parameters, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
-    tr_out1 = i3.signal_power_dB(S_total["MZIyb{}_out1:0".format(ind), "MZIyb{}_in:0".format(ind)])
-    tr_out2 = i3.signal_power_dB(S_total["MZIyb{}_out2:0".format(ind), "MZIyb{}_in:0".format(ind)])
+    tr_out1 = i3.signal_power_dB(S_total["MZIheater{}_out:0".format(ind), "MZIheater{}_in:0".format(ind)])
 
     # Indices of the axes will be zero based
     ax_idx = ind - 1
-    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI_YB{}:out1".format(ind))
-    axs[ax_idx].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI_YB{}:out2".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI heater{}:out1".format(ind))
 
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
-    axs[ax_idx].set_title("MZI_YB{} - Delay length {} um".format(ind, parameter), fontsize=16)
+    axs[ax_idx].set_title("MZI heater {} - arm spacing {} um".format(ind, parameter), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
 
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)

@@ -62,8 +62,8 @@ class MZI_YB_thermo(i3.Circuit):
             i3.Place("fgc_1:opt1", (0, 0)),
             i3.PlaceRelative("fgc_2:opt1", "fgc_1:opt1", (0.0, fgc_spacing_y)),
             # Adhere by the placement rules to avoid metal burning damaging the fiber array
-            i3.PlaceRelative("yb_s1:opt1", "fgc_2:opt1", (mzi_splitter_x, 40.0), angle=90),
-            i3.PlaceRelative("yb_c1:opt1", "fgc_1:opt1", (mzi_splitter_x, -40.0), angle=-90),
+            i3.PlaceRelative("yb_s1:opt1", "fgc_2:opt1", (mzi_splitter_x, 35.0), angle=90),
+            i3.PlaceRelative("yb_c1:opt1", "fgc_1:opt1", (mzi_splitter_x, -35.0), angle=-90),
             # Place the electrical bond pads
             i3.Place("bp_1", (self.bond_pad_GC_dist, 0)),
             i3.Place("bp_2", (self.bond_pad_GC_dist, self.bond_pad_spacing_y)),
