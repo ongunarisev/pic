@@ -83,21 +83,25 @@ class MZI_YB_thermo(i3.Circuit):
         ]
         return specs
 
-    def get_connector_instances(self):
-        lv_instances = self.get_default_view(i3.LayoutView).instances
-        return [
-            lv_instances["yb_s1_opt2_to_yb_c1_opt3"],  # Long arm MZI 1
-            lv_instances["yb_s1_opt3_to_yb_c1_opt2"],
-            lv_instances["yb_s2_opt3_to_yb_c2_opt2"],  # Long arm MZI 2
-            lv_instances["yb_s2_opt2_to_yb_c2_opt3"]
-        ]
-
     def _default_exposed_ports(self):
         exposed_ports = {
             "fgc_2:fib1": "in",
             "fgc_1:fib1": "out",
         }
         return exposed_ports
+
+    class CircuitModel(i3.CircuitModelView):
+        def _generate_model(self):
+            # Remove the electrical layers
+            to_remove = ['bp_1', 'bp_2', 'heater']
+            new_instances = {}
+            netlist_view = self.netlist_view
+            for key, value in netlist_view.netlist.instances.items():
+                flag = map(lambda x: x in key, to_remove)
+                if not any(flag):
+                    new_instances[key] = value
+            netlist_view.netlist.instances = new_instances
+            return i3.HierarchicalModel.from_netlistview(netlist_view)
 
 
 if __name__ == "__main__":

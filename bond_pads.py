@@ -15,6 +15,14 @@ pplayer_m_open = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M_open, purpose=
 pplayer_m2 = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M2, purpose=i3.TECH.PURPOSE.DRAWING)
 pplayer_m1 = i3.ProcessPurposeLayer(process=i3.TECH.PROCESS.M1, purpose=i3.TECH.PURPOSE.DRAWING)
 
+
+class ElectricalWireTemplateWModel(i3.ElectricalWireTemplate):
+    class Netlist(i3.NetlistFromLayout):
+        pass
+
+    class CircuitModel(i3.CircuitModelView):
+        pass
+
 # Generate the wires for interconnects. These can be used with ConnectManhattan with rounding_algorithm set to None
 wire_thickness = 10  # Wire thickness in microns
 wire_template = i3.ElectricalWireTemplate()
@@ -25,6 +33,13 @@ class BondPad(i3.PCell):
     """200 nm TiW + 500 nm A,l bulk resistivity 0.04 uOhm*m, sheet resistance 0.07 Ohm / sq"""
     measurement_label_position = i3.Coord2Property(default=(0, 0), doc="Placement of automated measurement label")
     measurement_label_pretext = "elec_device_Vesnog_"
+
+    class Netlist(i3.NetlistFromLayout):
+        pass
+
+    class CircuitModel(i3.CircuitModelView):
+        pass
+
     class Layout(i3.LayoutView):
         size = i3.Size2Property(default=(75.0, 75.0), doc="Size of the bondpad")
         metal_layer = i3.LayerProperty(default=pplayer_m2, doc="Metal used for the bondpad")
@@ -48,6 +63,12 @@ class BondPad(i3.PCell):
 
 class Heater(i3.PCell):
     """200 nm TiW thickness, bulk resistivity 0.61 uOhm*m, sheet resistance 3.04 Ohm / sq"""
+    class Netlist(i3.NetlistFromLayout):
+        pass
+
+    class CircuitModel(i3.CircuitModelView):
+        pass
+
     class Layout(i3.LayoutView):
         size = i3.Size2Property(default=(4.0, 100.0), doc="Size of the heater")
         metal_layer = i3.LayerProperty(default=pplayer_m1, doc="Metal used for the heater")
