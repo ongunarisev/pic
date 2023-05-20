@@ -12,6 +12,9 @@ from mzi_pcell_bdc_calib import MZI_BDC_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
+import pickle
+from scipy.io import savemat, loadmat
+
 
 # We make a copy of the layer dictionary to freely modify it
 pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
@@ -190,6 +193,7 @@ specs.append(i3.Place(mzi_cell_name, (x0, y0)))
 meas_label_coord = mzi_yb_cal.measurement_label_position + (x0, y0)
 text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
 circuit_cell_names.append(mzi_cell_name)
+
 x0 += 80
 
 mzi_bdc_cal = MZI_BDC_calib(name="MZI_BDC_3port_calibration")
@@ -236,7 +240,10 @@ wavelengths = np.linspace(1.52, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
 # Plotting
-fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
+fig, axs = plt.subplots(len(delay_lengths_tuples) + len(delay_lengths), sharex="all", figsize=(12, 18))
+
+# Dictionary for saving variables
+m_dict = {}
 
 for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
@@ -252,6 +259,7 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx].set_title("Delay length {} um".format(delay_length), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
+    m_dict[f"MZI_YB_3port_{delay_length}"] = {"out1": tr_out1, "out2": tr_out2}
 
 for ind2, delay_length in enumerate(delay_lengths, start=1):
     tr_out1 = i3.signal_power_dB(S_total["MZIbdc3port{}_out1:0".format(ind2), "MZIbdc3port{}_in:0".format(ind2)])
@@ -265,7 +273,12 @@ for ind2, delay_length in enumerate(delay_lengths, start=1):
     axs[ax_idx2].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx2].set_title("Delay length {} um".format(delay_length), fontsize=16)
     axs[ax_idx2].legend(fontsize=14, loc=4)
+    m_dict[f"MZI_BDC_3port_{delay_length}"] = {"out1": tr_out1, "out2": tr_out2}
 
+
+savemat(f'./data/MZI_circuitA.mat', m_dict)
+with open(f'./data/MZI_circuitA.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump(m_dict, f)
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
 plt.show()
 

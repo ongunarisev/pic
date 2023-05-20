@@ -10,6 +10,9 @@ from mzi_pcell_ybranch_4port_calib import MZI_YB_4port_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
+import pickle
+from scipy.io import savemat, loadmat
+
 
 # We make a copy of the layer dictionary to freely modify it
 pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
@@ -122,9 +125,6 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     # Place the next circuit to the right of GDS layout
     x0 += size_info.width + x_spacing
 
-# The MZIs with BDC
-delay_lengths = [100.0, 200.0]
-
 mzi_yb_cal = MZI_YB_4port_calib(name="MZI_YB_4port_calibration")
 mzi_cell_name = 'MZIyb4portC'
 meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
@@ -169,11 +169,14 @@ cell_lv.write_gdsii(filename, layer_map=output_layer_map)
 
 # Circuit model
 cell_cm = top_cell.CircuitModel()
-wavelengths = np.linspace(1.52, 1.58, 4001)
+wavelengths = np.linspace(1.50, 1.58, 4001)
 S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 
 # Plotting
 fig, axs = plt.subplots(3, sharex="all", figsize=(12, 18))
+
+# Dictionary for saving variables
+m_dict = {}
 
 for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
@@ -191,8 +194,11 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx].set_title("MZI YB 4-port {} - Delay length {} um".format(ind, delay_length), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
+    m_dict[f"MZI_YB_4port_{delay_length}"] = {"out1": tr_out1, "out2": tr_out2, "out3": tr_out3}
 
-
+savemat(f'./data/MZI_circuitB.mat', m_dict)
+with open(f'./data/MZI_circuitB.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump(m_dict, f)
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
 plt.show()
 
