@@ -9,7 +9,7 @@ si_fab/ipkiss/si_fab/compactmodels/all.py -> MMI1x2Model to extract the S-matrix
 # Importing the technology and IPKISS
 from si_fab import all as pdk
 from ipkiss3 import all as i3
-
+from mmi1x3_cm import MMI1x3Model
 
 # Building the MMI PCell with properties that describe its geometry
 class MMI1x3(i3.PCell):
@@ -137,6 +137,14 @@ class MMI1x3(i3.PCell):
 
         def _default_reflection_out(self):
             raise NotImplementedError("Please specify reflection_out")
+
+        def _generate_model(self):
+            return MMI1x3Model(
+                center_wavelength=self.center_wavelength,
+                transmission=self.transmission,
+                reflection_in=self.reflection_in,
+                reflection_out=self.reflection_out,
+            )
 
 
 if __name__ == "__main__":
