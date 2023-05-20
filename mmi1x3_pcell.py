@@ -170,6 +170,7 @@ if __name__ == "__main__":
         cross_section_path=i3.Shape([(-0.5, -1.5), (-0.5, 1.5)]), process_flow=pdk.TECH.VFABRICATION.PROCESS_FLOW_FEOL
     ).visualize()
 
+    # Simulate without visualization
     wavelengths = np.arange(1.5, 1.6, 0.01)
     center_wavelength = 1.55
     print("Simulating...")
@@ -178,7 +179,7 @@ if __name__ == "__main__":
         wavelengths=wavelengths,
         num_modes=20,
         north=0.5 * mmi_layout.size_info().get_height(),
-        plot=True,
+        plot=False,
     )
     print("Done")
 
@@ -187,6 +188,7 @@ if __name__ == "__main__":
     # The value of pol_refl_out is not extracted from the CAMFR simulation but we assume it's the same as pol_refl_in
     pol_refl_out = pol_refl_in
 
+    # Visualize the fields only at 1550 nm
     simulate_splitter_by_camfr(
         layout=mmi_layout,
         wavelengths=np.array([center_wavelength]),

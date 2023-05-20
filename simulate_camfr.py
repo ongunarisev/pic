@@ -108,7 +108,7 @@ def simulate_splitter_by_camfr(
         sim_window = i3.SizeInfo(
             west=west,
             east=east,
-            south=0.0,
+            south=-north,
             north=north,
         )
 
