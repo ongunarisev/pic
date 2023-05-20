@@ -97,7 +97,7 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
 
     # Instantiate the MZI
     mzi_yb = MZI_YB_3port(
-        name="MZI_YB{}".format(ind),
+        name="MZI_YB_3port{}".format(ind),
         control_point1=cp[0],
         control_point2=cp[1],
         bend_radius=bend_radius,
@@ -120,7 +120,7 @@ for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     )
 
     # Add the MZI to the instances dict and place it
-    mzi_cell_name = "MZIyb{}".format(ind)
+    mzi_cell_name = "MZIyb3port{}".format(ind)
     insts[mzi_cell_name] = mzi_yb
     specs.append(i3.Place(mzi_cell_name, (x0, y0)))
 
@@ -149,7 +149,7 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
 
     # Instantiate the MZI
     mzi_bdc = MZI_BDC(
-        name="MZI_BDC{}".format(ind),
+        name="MZI_BDC_3port{}".format(ind),
         control_point=cp,
         bend_radius=bend_radius,
     )
@@ -167,7 +167,7 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
     )
 
     # Add the MZI to the instances dict and place it
-    mzi_cell_name = "MZIbdc{}".format(ind)
+    mzi_cell_name = "MZIbdc3port{}".format(ind)
     insts[mzi_cell_name] = mzi_bdc
     specs.append(i3.Place(mzi_cell_name, (x0, y0)))
 
@@ -182,8 +182,8 @@ for ind, delay_length in enumerate(delay_lengths, start=1):
 
 x0 += 30
 
-mzi_yb_cal = MZI_YB_3port_calib(name="MZI_YB_calibration")
-mzi_cell_name = 'MZIybC'
+mzi_yb_cal = MZI_YB_3port_calib(name="MZI_YB_3port_calibration")
+mzi_cell_name = 'MZIyb3portC'
 meas_label = f"{mzi_yb_cal.measurement_label_pretext}{mzi_cell_name}"
 insts[mzi_cell_name] = mzi_yb_cal
 specs.append(i3.Place(mzi_cell_name, (x0, y0)))
@@ -192,8 +192,8 @@ text_label_dict[mzi_cell_name] = [meas_label, meas_label_coord]
 circuit_cell_names.append(mzi_cell_name)
 x0 += 80
 
-mzi_bdc_cal = MZI_BDC_calib(name="MZI_BDC_calibration")
-mzi_cell_name = 'MZIbdcC'
+mzi_bdc_cal = MZI_BDC_calib(name="MZI_BDC_3port_calibration")
+mzi_cell_name = 'MZIbdc3portC'
 meas_label = f"{mzi_bdc_cal.measurement_label_pretext}{mzi_cell_name}"
 insts[mzi_cell_name] = mzi_bdc_cal
 specs.append(i3.Place(mzi_cell_name, (x0, y0 + mzi_bdc_cal.fgc_spacing_y)))
@@ -241,29 +241,29 @@ fig, axs = plt.subplots(4, sharex="all", figsize=(12, 18))
 for ind, delay_length in enumerate(delay_lengths_tuples, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
-    tr_out1 = i3.signal_power_dB(S_total["MZIyb{}_out1:0".format(ind), "MZIyb{}_in:0".format(ind)])
-    tr_out2 = i3.signal_power_dB(S_total["MZIyb{}_out2:0".format(ind), "MZIyb{}_in:0".format(ind)])
+    tr_out1 = i3.signal_power_dB(S_total["MZIyb3port{}_out1:0".format(ind), "MZIyb3port{}_in:0".format(ind)])
+    tr_out2 = i3.signal_power_dB(S_total["MZIyb3port{}_out2:0".format(ind), "MZIyb3port{}_in:0".format(ind)])
 
     # Indices of the axes will be zero based
     ax_idx = ind - 1
-    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI_YB{}:out1".format(ind))
-    axs[ax_idx].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI_YB{}:out2".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI YB 3-port {}:out1".format(ind))
+    axs[ax_idx].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI YB 3-port {}:out2".format(ind))
 
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
-    axs[ax_idx].set_title("MZI_YB{} - Delay length {} um".format(ind, delay_length), fontsize=16)
+    axs[ax_idx].set_title("Delay length {} um".format(delay_length), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
 
 for ind2, delay_length in enumerate(delay_lengths, start=1):
-    tr_out1 = i3.signal_power_dB(S_total["MZIbdc{}_out1:0".format(ind2), "MZIbdc{}_in:0".format(ind2)])
-    tr_out2 = i3.signal_power_dB(S_total["MZIbdc{}_out2:0".format(ind2), "MZIbdc{}_in:0".format(ind2)])
+    tr_out1 = i3.signal_power_dB(S_total["MZIbdc3port{}_out1:0".format(ind2), "MZIbdc3port{}_in:0".format(ind2)])
+    tr_out2 = i3.signal_power_dB(S_total["MZIbdc3port{}_out2:0".format(ind2), "MZIbdc3port{}_in:0".format(ind2)])
 
     # Indices of the axes will be zero based
     ax_idx2 = ind2 + ax_idx
-    axs[ax_idx2].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI_BDC{}:out1".format(ind2))
-    axs[ax_idx2].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI_BDC{}:out2".format(ind2))
+    axs[ax_idx2].plot(wavelengths, tr_out1, "-", linewidth=2.2, label="TE - MZI BDC 3-port {}:out1".format(ind2))
+    axs[ax_idx2].plot(wavelengths, tr_out2, "-", linewidth=2.2, label="TE - MZI BDC 3-port {}:out2".format(ind2))
 
     axs[ax_idx2].set_ylabel("Transmission [dB]", fontsize=16)
-    axs[ax_idx2].set_title("MZI_BDC{} - Delay length {} um".format(ind2, delay_length), fontsize=16)
+    axs[ax_idx2].set_title("Delay length {} um".format(delay_length), fontsize=16)
     axs[ax_idx2].legend(fontsize=14, loc=4)
 
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
