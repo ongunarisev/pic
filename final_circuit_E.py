@@ -10,6 +10,9 @@ from ring_resonator_calib_cell import RingResonator_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
+from scipy.io import savemat, loadmat
+import pickle
+
 
 # We make a copy of the layer dictionary to freely modify it
 pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
@@ -39,7 +42,7 @@ text_label_dict = {}  # Text labels dictionary for automated measurement labels
 circuit_cell_names = []  # Constituent circuit cell names list
 
 
-# Create the MZI sweep for MZIs with Y-branches
+# Create the sweep over coupling length for ring resonators
 for ind, coupling_length in enumerate(coupling_lengths, start=1):
     rr = pdk.EbeamAddDropSymmStraight(coupler_length=coupling_length)
     # Instantiate the MZI
@@ -71,7 +74,7 @@ rr_cal = RingResonator_calib(
     bend_radius=bend_radius,
 )
 
-# Add the MZI to the instances dict and place it
+# Add the calibration circuit to the instances dict and place it
 rr_cell_name = "RRc"
 insts[rr_cell_name] = rr_cal
 
@@ -122,6 +125,9 @@ S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 # Plotting
 fig, axs = plt.subplots(coupling_lengths.size, sharex="all", figsize=(12, 28))
 
+# Dictionary for saving variables
+m_dict = {}
+
 for ind, coupling_length in enumerate(coupling_lengths, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
@@ -139,7 +145,11 @@ for ind, coupling_length in enumerate(coupling_lengths, start=1):
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx].set_title("Ring Resonator {} - Coupling length {} um".format(ind, coupling_length), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
+    m_dict[f"RR_coupling_length_{coupling_length:.2f}"] = {"pass": tr_pass, "drop": tr_drop, "add": tr_add}
 
+savemat(f'./data/RR_circuitE.mat', m_dict)
+with open(f'./data/RR_circuitE.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump(m_dict, f)
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
 plt.show()
 

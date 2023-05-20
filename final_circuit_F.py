@@ -10,6 +10,9 @@ from ring_resonator_calib_cell import RingResonator_calib
 from datetime import datetime
 import numpy as np
 import pylab as plt
+from scipy.io import savemat, loadmat
+import pickle
+
 
 # We make a copy of the layer dictionary to freely modify it
 pplayer_map = dict(i3.TECH.GDSII.LAYERTABLE)
@@ -39,7 +42,7 @@ text_label_dict = {}  # Text labels dictionary for automated measurement labels
 circuit_cell_names = []  # Constituent circuit cell names list
 
 
-# Create the MZI sweep for MZIs with Y-branches
+# Create the sweep over resonator radius for ring resonators
 for ind, resonator_radius in enumerate(resonator_radii, start=1):
     rr = pdk.EbeamAddDropSymmStraight(coupler_length=0.5, radius=resonator_radius)
     # Instantiate the MZI
@@ -71,7 +74,7 @@ rr_cal = RingResonator_calib(
     bend_radius=bend_radius,
 )
 
-# Add the MZI to the instances dict and place it
+# Add the calibration circuit to the instances dict and place it
 rr_cell_name = "RRc"
 insts[rr_cell_name] = rr_cal
 
@@ -122,6 +125,9 @@ S_total = cell_cm.get_smatrix(wavelengths=wavelengths)
 # Plotting
 fig, axs = plt.subplots(resonator_radii.size, sharex="all", figsize=(12, 28))
 
+# Dictionary for saving variables
+m_dict = {}
+
 for ind, resonator_radius in enumerate(resonator_radii, start=1):
     # After the colon the mode is selected (two modes) / for the particular examples S-matrix has 12x12x2 entries
     # not counting the ones due to wavelength
@@ -139,7 +145,11 @@ for ind, resonator_radius in enumerate(resonator_radii, start=1):
     axs[ax_idx].set_ylabel("Transmission [dB]", fontsize=16)
     axs[ax_idx].set_title("Ring resonator {} - Resonator Radius {} um".format(ind, resonator_radius), fontsize=16)
     axs[ax_idx].legend(fontsize=14, loc=4)
+    m_dict[f"RR_resonator_radius_{resonator_radius:.4f}"] = {"pass": tr_pass, "drop": tr_drop, "add": tr_add}
 
+savemat(f'./data/RR_circuitF.mat', m_dict)
+with open(f'./data/RR_circuitF.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+    pickle.dump(m_dict, f)
 axs[-1].set_xlabel("Wavelength [um]", fontsize=16)
 plt.show()
 
