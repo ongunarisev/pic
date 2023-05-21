@@ -207,9 +207,15 @@ for key, value in text_label_dict.items():
 filename = "EBeam_heaters_Vesnog.gds"
 cell_lv = top_cell.Layout()
 cell_lv.append(text_elems)
+# Visualize the layout
 cell_lv.visualize(annotate=True)
+# Visualize the stacks in the final fabricated chip from top-down
 cell_lv.visualize_2d(process_flow=PROCESS_FLOW)
 cell_lv.write_gdsii(filename, layer_map=output_layer_map)
+# Visualize the cross-section along the heated arm
+cell_lv.cross_section(i3.Shape([(198, 210), (198, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+# Visualize the cross-section along the non-heated arm
+cell_lv.cross_section(i3.Shape([(178, 210), (178, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
 
 # Circuit model
 cell_cm = top_cell.CircuitModel()
