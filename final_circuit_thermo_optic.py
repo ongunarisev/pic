@@ -9,22 +9,21 @@ from mzi_pcell_yb_thermo import MZI_YB_thermo, pplayer_map
 from datetime import datetime
 import numpy as np
 import pylab as plt
-from pysics.basics.material.material import Material
 from pysics.basics.material.material_stack import MaterialStack
 from ipkiss.visualisation.display_style import DisplayStyle
 from ipkiss.visualisation import color
+from bond_pads import pplayer_m1, pplayer_m2, pplayer_m_open
 
 # Virtual fabrication test (can be moved to another file later on)
-TECH = i3.TECH
 
 # Only oxide layer / passivated (last silica layer)
 MSTACK_SOI_OX = MaterialStack(
     name="Oxide",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
         # (TECH.MATERIALS.SILICON_OXIDE, 0.22),
-        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
     ],
     display_style=DisplayStyle(color=color.COLOR_BLUE),
 )
@@ -33,10 +32,10 @@ MSTACK_SOI_OX = MaterialStack(
 MSTACK_SOI_220nm_OX = MaterialStack(
     name="220nm Si + Oxide",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
-        (TECH.MATERIALS.SILICON, 0.220),
-        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
     ],
     display_style=DisplayStyle(color=color.COLOR_RED),
 )
@@ -45,11 +44,11 @@ MSTACK_SOI_220nm_OX = MaterialStack(
 MSTACK_SOI_220nm_OX_METAL_H = MaterialStack(
     name="220nm Si + Oxide + Heater",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
-        (TECH.MATERIALS.SILICON, 0.220),
-        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
-        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
     ],
     display_style=DisplayStyle(color=color.COLOR_YELLOW),
 )
@@ -58,12 +57,12 @@ MSTACK_SOI_220nm_OX_METAL_H = MaterialStack(
 MSTACK_SOI_OX_METAL_H_R_p = MaterialStack(
     name="Oxide + Heater + routing",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
-        (TECH.MATERIALS.SILICON, 0.220),
-        # (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
-        (TECH.MATERIALS.ALUMINIUM, 0.5),
-        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
     ],
     display_style=DisplayStyle(color=color.COLOR_GRAY),
 )
@@ -72,25 +71,25 @@ MSTACK_SOI_OX_METAL_H_R_p = MaterialStack(
 MSTACK_SOI_220nm_OX_METAL_H_R_p = MaterialStack(
     name="220nm Si + Oxide + Heater + routing",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
-        (TECH.MATERIALS.SILICON, 0.220),
-        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
-        (TECH.MATERIALS.ALUMINIUM, 0.5),
-        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
     ],
-    display_style=DisplayStyle(color=color.COLOR_GRAY),
+    display_style=DisplayStyle(color=color.COLOR_GREEN),
 )
 
 # Oxide with the heater and with the routing metal (no waveguide) and with the passivation layer removed
 MSTACK_SOI_OX_METAL_H_R = MaterialStack(
     name="Oxide + Heater + routing + bond pad open",
     materials_heights=[
-        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
         # (TECH.MATERIALS.SILICON, 0.220),
-        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
-        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
-        (TECH.MATERIALS.ALUMINIUM, 0.5),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
     ],
     display_style=DisplayStyle(color=color.COLOR_BLUE_VIOLET),
 )
@@ -102,28 +101,29 @@ PROCESS_R = i3.ProcessLayer(extension="M2", name="Router Metalization")
 PROCESS_OPEN = i3.ProcessLayer(extension="M_open", name="Metal bond pad open")
 # then compose a process flow
 
-TECH.VFABRICATION.overwrite_allowed.append("PROCESS_FLOW")
+i3.TECH.VFABRICATION.overwrite_allowed.append("PROCESS_FLOW")
 PROCESS_FLOW = i3.VFabricationProcessFlow(
-    active_processes=[TECH.PROCESS.WG, TECH.PROCESS.M1, TECH.PROCESS.M2, TECH.PROCESS.M_open],
+    active_processes=[i3.TECH.PROCESS.WG, i3.TECH.PROCESS.M1, i3.TECH.PROCESS.M2, i3.TECH.PROCESS.M_open],
     process_layer_map={
-        TECH.PROCESS.WG: TECH.PPLAYER.WG,
-        TECH.PROCESS.M1: pplayer_map[TECH.PROCESS.M1, TECH.PURPOSE.DRAWING],
-        TECH.PROCESS.M2: pplayer_map[TECH.PROCESS.M2, TECH.PURPOSE.DRAWING],
-        TECH.PROCESS.M_open: pplayer_map[TECH.PROCESS.M_open, TECH.PURPOSE.DRAWING],
+        i3.TECH.PROCESS.WG: i3.TECH.PPLAYER.WG,
+        i3.TECH.PROCESS.M1: pplayer_m1,
+        i3.TECH.PROCESS.M2: pplayer_m2,
+        i3.TECH.PROCESS.M_open: pplayer_m_open,
     },
     process_to_material_stack_map=[
         ((0, 0, 0, 0), MSTACK_SOI_OX),  # Background
         ((1, 0, 0, 0), MSTACK_SOI_220nm_OX),  # Only silicon waveguide
-        ((0, 1, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Only electrical routing layer
-        ((0, 1, 1, 1), MSTACK_SOI_OX_METAL_H_R),  # Bond pad open
+        ((0, 1, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Bilayer routing when M1 and M2 are present at the same time
+        ((0, 0, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Bilayer routing when only M2 layer is present
+        ((0, 0, 1, 1), MSTACK_SOI_OX_METAL_H_R),  # Bond pad open
         ((1, 1, 1, 0), MSTACK_SOI_220nm_OX_METAL_H_R_p),  # Waveguide with the heater + electrical connection
         ((1, 1, 0, 0), MSTACK_SOI_220nm_OX_METAL_H),  # Waveguide with the heater only
     ],
     is_lf_fabrication={
-        TECH.PROCESS.WG: False,
-        TECH.PROCESS.M1: False,
-        TECH.PROCESS.M2: False,
-        TECH.PROCESS.M_open: False,
+        i3.TECH.PROCESS.WG: False,
+        i3.TECH.PROCESS.M1: False,
+        i3.TECH.PROCESS.M2: False,
+        i3.TECH.PROCESS.M_open: False,
     },
 )
 
