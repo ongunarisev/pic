@@ -210,12 +210,39 @@ cell_lv.append(text_elems)
 # Visualize the layout
 cell_lv.visualize(annotate=True)
 # Visualize the stacks in the final fabricated chip from top-down
-cell_lv.visualize_2d(process_flow=PROCESS_FLOW)
+f = cell_lv.visualize_2d(process_flow=PROCESS_FLOW, visualize=False)
+ax = f.axes[0]
+ax.legend_.set_bbox_to_anchor((1, 1.05))
+
 cell_lv.write_gdsii(filename, layer_map=output_layer_map)
 # Visualize the cross-section along the heated arm
-cell_lv.cross_section(i3.Shape([(198, 210), (198, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+f1 = cell_lv.cross_section(i3.Shape([(198, 210), (198, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f1.axes[0]
+ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+ax.set_title("Waveguide arm with heater (XS along y)")
 # Visualize the cross-section along the non-heated arm
-cell_lv.cross_section(i3.Shape([(178, 210), (178, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+f2 = cell_lv.cross_section(i3.Shape([(178, 210), (178, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f2.axes[0]
+ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_title("Waveguide arm without heater (XS along y)")
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+
+f3 = cell_lv.cross_section(i3.Shape([(200, 160), (450, 160)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f3.axes[0]
+ax.set_xlabel("$x(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_title("Routing to bondpad open (XS along x)")
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+plt.show()
 
 # Circuit model
 cell_cm = top_cell.CircuitModel()
