@@ -9,6 +9,123 @@ from mzi_pcell_yb_thermo import MZI_YB_thermo, pplayer_map
 from datetime import datetime
 import numpy as np
 import pylab as plt
+from pysics.basics.material.material import Material
+from pysics.basics.material.material_stack import MaterialStack
+from ipkiss.visualisation.display_style import DisplayStyle
+from ipkiss.visualisation import color
+
+# Virtual fabrication test (can be moved to another file later on)
+TECH = i3.TECH
+
+# Only oxide layer / passivated (last silica layer)
+MSTACK_SOI_OX = MaterialStack(
+    name="Oxide",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (TECH.MATERIALS.SILICON_OXIDE, 0.22),
+        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_BLUE),
+)
+
+# Waveguide surrounded by oxide / passivated
+MSTACK_SOI_220nm_OX = MaterialStack(
+    name="220nm Si + Oxide",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (TECH.MATERIALS.SILICON, 0.220),
+        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_RED),
+)
+
+# Waveguide with the heater without the routing metal / passivated
+MSTACK_SOI_220nm_OX_METAL_H = MaterialStack(
+    name="220nm Si + Oxide + Heater",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (TECH.MATERIALS.SILICON, 0.220),
+        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_YELLOW),
+)
+
+# Oxide with heater with the routing metal (no waveguide) / passivated
+MSTACK_SOI_OX_METAL_H_R_p = MaterialStack(
+    name="Oxide + Heater + routing",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (TECH.MATERIALS.SILICON, 0.220),
+        # (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (TECH.MATERIALS.ALUMINIUM, 0.5),
+        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_GRAY),
+)
+
+# Waveguide with the heater and with the routing metal / passivated
+MSTACK_SOI_220nm_OX_METAL_H_R_p = MaterialStack(
+    name="220nm Si + Oxide + Heater + routing",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (TECH.MATERIALS.SILICON, 0.220),
+        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (TECH.MATERIALS.ALUMINIUM, 0.5),
+        (TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_GRAY),
+)
+
+# Oxide with the heater and with the routing metal (no waveguide) and with the passivation layer removed
+MSTACK_SOI_OX_METAL_H_R = MaterialStack(
+    name="Oxide + Heater + routing + bond pad open",
+    materials_heights=[
+        (TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (TECH.MATERIALS.SILICON, 0.220),
+        (TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (TECH.MATERIALS.ALUMINIUM, 0.5),
+    ],
+    display_style=DisplayStyle(color=color.COLOR_BLUE_VIOLET),
+)
+
+# Define the processes
+PROCESS_WG = i3.ProcessLayer(extension="WG", name="Waveguide")
+PROCESS_H = i3.ProcessLayer(extension="M1", name="Heater Metalization")
+PROCESS_R = i3.ProcessLayer(extension="M2", name="Router Metalization")
+PROCESS_OPEN = i3.ProcessLayer(extension="M_open", name="Metal bond pad open")
+# then compose a process flow
+
+TECH.VFABRICATION.overwrite_allowed.append("PROCESS_FLOW")
+PROCESS_FLOW = i3.VFabricationProcessFlow(
+    active_processes=[TECH.PROCESS.WG, TECH.PROCESS.M1, TECH.PROCESS.M2, TECH.PROCESS.M_open],
+    process_layer_map={
+        TECH.PROCESS.WG: TECH.PPLAYER.WG,
+        TECH.PROCESS.M1: pplayer_map[TECH.PROCESS.M1, TECH.PURPOSE.DRAWING],
+        TECH.PROCESS.M2: pplayer_map[TECH.PROCESS.M2, TECH.PURPOSE.DRAWING],
+        TECH.PROCESS.M_open: pplayer_map[TECH.PROCESS.M_open, TECH.PURPOSE.DRAWING],
+    },
+    process_to_material_stack_map=[
+        ((0, 0, 0, 0), MSTACK_SOI_OX),  # Background
+        ((1, 0, 0, 0), MSTACK_SOI_220nm_OX),  # Only silicon waveguide
+        ((0, 1, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Only electrical routing layer
+        ((0, 1, 1, 1), MSTACK_SOI_OX_METAL_H_R),  # Bond pad open
+        ((1, 1, 1, 0), MSTACK_SOI_220nm_OX_METAL_H_R_p),  # Waveguide with the heater + electrical connection
+        ((1, 1, 0, 0), MSTACK_SOI_220nm_OX_METAL_H),  # Waveguide with the heater only
+    ],
+    is_lf_fabrication={
+        TECH.PROCESS.WG: False,
+        TECH.PROCESS.M1: False,
+        TECH.PROCESS.M2: False,
+        TECH.PROCESS.M_open: False,
+    },
+)
 
 # Write the content to be written on WG_P6NM on Silicon layer directly
 pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.TECH.PROCESS.WG, i3.TECH.PURPOSE.DRAWING]
@@ -91,7 +208,7 @@ filename = "EBeam_heaters_Vesnog.gds"
 cell_lv = top_cell.Layout()
 cell_lv.append(text_elems)
 cell_lv.visualize(annotate=True)
-cell_lv.visualize_2d()
+cell_lv.visualize_2d(process_flow=PROCESS_FLOW)
 cell_lv.write_gdsii(filename, layer_map=output_layer_map)
 
 # Circuit model
