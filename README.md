@@ -8,3 +8,15 @@ This is the repository containing my designs for the <a href="https://learning.e
  - The design approach taken here is <b>Layout-driven</b>, followed by verification, then a schematic (via a netlist extraction) and simulations.
  - Circuit simulations are done with Caphe included in IPKISS and Lumerical Interconnect available by <a href="https://www.ansys.com/products/photonics"> Ansys </a> 
 
+![](MZIs_A.png)
+
+![](MZIs_A_simulation.png)
+
+![](Ring_resonators_E.png)
+
+![](Thermo_optic_A.png)
+
+![](Thermo_optic_A_with_stacks.png)
+
+
+
