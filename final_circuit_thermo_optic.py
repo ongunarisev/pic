@@ -15,7 +15,10 @@ from ipkiss.visualisation import color
 from bond_pads import pplayer_m1, pplayer_m2, pplayer_m_open
 
 # Virtual fabrication test (can be moved to another file later on)
-
+i3.TECH.MATERIALS.SILICON_OXIDE.display_style = DisplayStyle(color=color.COLOR_BLUE)
+i3.TECH.MATERIALS.SILICON.display_style = DisplayStyle(color=color.COLOR_RED)
+i3.TECH.MATERIALS.TUNGSTEN.display_style = DisplayStyle(color=color.COLOR_YELLOW)
+i3.TECH.MATERIALS.ALUMINIUM.display_style = DisplayStyle(color=color.COLOR_GRAY)
 # Only oxide layer / passivated (last silica layer)
 MSTACK_SOI_OX = MaterialStack(
     name="Oxide",
@@ -210,9 +213,15 @@ cell_lv.append(text_elems)
 # Visualize the layout
 cell_lv.visualize(annotate=True)
 # Visualize the stacks in the final fabricated chip from top-down
-f = cell_lv.visualize_2d(process_flow=PROCESS_FLOW, visualize=False)
+f = cell_lv.visualize_2d(process_flow=PROCESS_FLOW, visualize=False, enter_mainloop=False)
 ax = f.axes[0]
-ax.legend_.set_bbox_to_anchor((1, 1.05))
+l = ax.get_legend()
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width, box.height*0.9])
+ax.set_title('MZI with thermo-optical modulation on one arm', fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+ax.legend(l.get_patches(), [t.get_text() for t in l.get_texts()], bbox_to_anchor=(0.5, 1.05), borderaxespad=0, loc=8, ncol=2)
+# l.set_bbox_to_anchor((0, 1.05))
+plt.show()
 
 cell_lv.write_gdsii(filename, layer_map=output_layer_map)
 # Visualize the cross-section along the heated arm
@@ -220,25 +229,34 @@ f1 = cell_lv.cross_section(i3.Shape([(198, 210), (198, 20)]), process_flow=PROCE
 ax = f1.axes[0]
 ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
 ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+l = ax.get_legend()
+l._set_loc(4)
 xmin, xmax = ax.get_xlim()
 ymin, ymax = ax.get_ylim()
 ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
-ax.set_title("Waveguide arm with heater (XS along y)")
+ax.set_title("Waveguide arm with heater (XS along y)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+plt.show()
+
 # Visualize the cross-section along the non-heated arm
 f2 = cell_lv.cross_section(i3.Shape([(178, 210), (178, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
 ax = f2.axes[0]
 ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
 ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
-ax.set_title("Waveguide arm without heater (XS along y)")
+ax.set_title("Waveguide arm without heater (XS along y)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+l = ax.get_legend()
+l._set_loc(4)
 xmin, xmax = ax.get_xlim()
 ymin, ymax = ax.get_ylim()
 ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
 
+# Visualize the route to the bondpad open from the heater
 f3 = cell_lv.cross_section(i3.Shape([(200, 160), (450, 160)]), process_flow=PROCESS_FLOW).visualize(show=False)
 ax = f3.axes[0]
 ax.set_xlabel("$x(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
 ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
-ax.set_title("Routing to bondpad open (XS along x)")
+ax.set_title("Routing to bondpad open (XS along x)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+l = ax.get_legend()
+l._set_loc(4)
 xmin, xmax = ax.get_xlim()
 ymin, ymax = ax.get_ylim()
 ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
