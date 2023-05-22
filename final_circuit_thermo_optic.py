@@ -9,6 +9,123 @@ from mzi_pcell_yb_thermo import MZI_YB_thermo, pplayer_map
 from datetime import datetime
 import numpy as np
 import pylab as plt
+from pysics.basics.material.material_stack import MaterialStack
+from ipkiss.visualisation.display_style import DisplayStyle
+from ipkiss.visualisation import color
+from bond_pads import pplayer_m1, pplayer_m2, pplayer_m_open
+
+# Material visualization definitions for virtual fabrication compliant with the materials stack colors
+i3.TECH.MATERIALS.SILICON_OXIDE.display_style = DisplayStyle(color=color.COLOR_BLUE)
+i3.TECH.MATERIALS.SILICON.display_style = DisplayStyle(color=color.COLOR_RED)
+i3.TECH.MATERIALS.TUNGSTEN.display_style = DisplayStyle(color=color.COLOR_YELLOW)
+i3.TECH.MATERIALS.ALUMINIUM.display_style = DisplayStyle(color=color.COLOR_GRAY)
+
+# Material stack definitions for virtual fabrication
+# Only oxide layer / passivated (last silica layer)
+MSTACK_SOI_OX = MaterialStack(
+    name="Oxide",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (TECH.MATERIALS.SILICON_OXIDE, 0.22),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_BLUE),
+)
+
+# Waveguide surrounded by oxide / passivated
+MSTACK_SOI_220nm_OX = MaterialStack(
+    name="220nm Si + Oxide",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_RED),
+)
+
+# Waveguide with the heater without the routing metal / passivated
+MSTACK_SOI_220nm_OX_METAL_H = MaterialStack(
+    name="220nm Si + Oxide + Heater",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_YELLOW),
+)
+
+# Oxide with heater with the routing metal (no waveguide) / passivated
+MSTACK_SOI_OX_METAL_H_R_p = MaterialStack(
+    name="Oxide + Heater + routing",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_GRAY),
+)
+
+# Waveguide with the heater and with the routing metal / passivated
+MSTACK_SOI_220nm_OX_METAL_H_R_p = MaterialStack(
+    name="220nm Si + Oxide + Heater + routing",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        (i3.TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 0.3),  # passivation layer
+    ],
+    display_style=DisplayStyle(color=color.COLOR_GREEN),
+)
+
+# Oxide with the heater and with the routing metal (no waveguide) and with the passivation layer removed
+MSTACK_SOI_OX_METAL_H_R = MaterialStack(
+    name="Oxide + Heater + routing + bond pad open",
+    materials_heights=[
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.0),
+        # (TECH.MATERIALS.SILICON, 0.220),
+        (i3.TECH.MATERIALS.SILICON_OXIDE, 2.2),
+        (i3.TECH.MATERIALS.TUNGSTEN, 0.2),  # The heater (actually titanium + tungsten alloy)
+        (i3.TECH.MATERIALS.ALUMINIUM, 0.5),
+    ],
+    display_style=DisplayStyle(color=color.COLOR_BLUE_VIOLET),
+)
+
+# Compose a process flow
+
+i3.TECH.VFABRICATION.overwrite_allowed.append("PROCESS_FLOW")
+PROCESS_FLOW = i3.VFabricationProcessFlow(
+    active_processes=[i3.TECH.PROCESS.WG, i3.TECH.PROCESS.M1, i3.TECH.PROCESS.M2, i3.TECH.PROCESS.M_open],
+    process_layer_map={
+        i3.TECH.PROCESS.WG: i3.TECH.PPLAYER.WG,
+        i3.TECH.PROCESS.M1: pplayer_m1,
+        i3.TECH.PROCESS.M2: pplayer_m2,
+        i3.TECH.PROCESS.M_open: pplayer_m_open,
+    },
+    process_to_material_stack_map=[
+        ((0, 0, 0, 0), MSTACK_SOI_OX),  # Background
+        ((1, 0, 0, 0), MSTACK_SOI_220nm_OX),  # Only silicon waveguide
+        ((0, 1, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Bilayer routing when M1 and M2 are present at the same time
+        ((0, 0, 1, 0), MSTACK_SOI_OX_METAL_H_R_p),  # Bilayer routing when only M2 layer is present
+        ((0, 0, 1, 1), MSTACK_SOI_OX_METAL_H_R),  # Bond pad open
+        ((1, 1, 1, 0), MSTACK_SOI_220nm_OX_METAL_H_R_p),  # Waveguide with the heater + electrical connection
+        ((1, 1, 0, 0), MSTACK_SOI_220nm_OX_METAL_H),  # Waveguide with the heater only
+    ],
+    is_lf_fabrication={
+        i3.TECH.PROCESS.WG: False,
+        i3.TECH.PROCESS.M1: False,
+        i3.TECH.PROCESS.M2: False,
+        i3.TECH.PROCESS.M_open: False,
+    },
+)
 
 # Write the content to be written on WG_P6NM on Silicon layer directly
 pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.TECH.PROCESS.WG, i3.TECH.PURPOSE.DRAWING]
@@ -31,6 +148,7 @@ floorplan = pdk.FloorPlan(name="FLOORPLAN", size=(440.0, 470.0))
 # Add the floor plan to the instances dict and place it at (0.0, 0.0)
 insts["floorplan"] = floorplan
 specs.append(i3.Place("floorplan", (0.0, 0.0)))
+
 # Initialize the text label dictionary
 text_label_dict = {}  # Text labels dictionary for automated measurement labels
 circuit_cell_names = []  # Constituent circuit cell names list
@@ -91,8 +209,55 @@ filename = "EBeam_heaters_Vesnog.gds"
 cell_lv = top_cell.Layout()
 cell_lv.append(text_elems)
 cell_lv.visualize(annotate=True)
-cell_lv.visualize_2d()
 cell_lv.write_gdsii(filename, layer_map=output_layer_map)
+
+# Visualize the stacks in the final fabricated chip from top-down
+f = cell_lv.visualize_2d(process_flow=PROCESS_FLOW, visualize=False, enter_mainloop=False)
+ax = f.axes[0]
+l = ax.get_legend()
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width, box.height*0.9])
+ax.set_title('MZI with thermo-optical modulation on one arm', fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+ax.legend(l.get_patches(), [t.get_text() for t in l.get_texts()], bbox_to_anchor=(0.5, 1.05), borderaxespad=0, loc=8, ncol=2)
+plt.show()
+
+# Visualize the cross-section along the heated arm
+f1 = cell_lv.cross_section(i3.Shape([(198, 210), (198, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f1.axes[0]
+ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+l = ax.get_legend()
+l._set_loc(4)
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+ax.set_title("Waveguide arm with heater (XS along y)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+plt.show()
+
+# Visualize the cross-section along the non-heated arm
+f2 = cell_lv.cross_section(i3.Shape([(178, 210), (178, 20)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f2.axes[0]
+ax.set_xlabel("$y(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_title("Waveguide arm without heater (XS along y)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+l = ax.get_legend()
+l._set_loc(4)
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+
+# Visualize the route to the bondpad open from the heater
+f3 = cell_lv.cross_section(i3.Shape([(200, 160), (450, 160)]), process_flow=PROCESS_FLOW).visualize(show=False)
+ax = f3.axes[0]
+ax.set_xlabel("$x(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_ylabel("$z(\mu m)$", fontdict={'fontsize':12, 'fontweight':'bold', 'color':'b'})
+ax.set_title("Routing to bondpad open (XS along x)", fontdict={'fontsize': 14, 'fontweight':'bold', 'color': 'r'})
+l = ax.get_legend()
+l._set_loc(4)
+xmin, xmax = ax.get_xlim()
+ymin, ymax = ax.get_ylim()
+ax.set_aspect((xmax-xmin)/(ymax-ymin)/2)
+plt.show()
 
 # Circuit model
 cell_cm = top_cell.CircuitModel()
