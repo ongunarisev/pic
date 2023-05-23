@@ -21,10 +21,10 @@ pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.T
 output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
 
 # Parameter sweep for ring resonator
-resonator_radii = np.arange(10, 10.20, 0.025)
+resonator_radii = np.arange(20, 25.1, 1)
 
 bend_radius = 5.0
-x0 = 5.0
+x0 = 3
 y0 = 5.0
 x_spacing = 5.0
 

@@ -21,7 +21,7 @@ pplayer_map[i3.TECH.PROCESS.WG_P6NM, i3.TECH.PURPOSE.DRAWING] = pplayer_map[i3.T
 output_layer_map = GenericGdsiiPPLayerOutputMap(pplayer_map=pplayer_map)
 
 # Parameter sweep for ring resonator
-coupling_lengths = np.arange(0, 4, 0.5)
+coupling_lengths = np.arange(0, 3, 0.5)
 
 bend_radius = 5.0
 x0 = 5.0
@@ -44,7 +44,7 @@ circuit_cell_names = []  # Constituent circuit cell names list
 
 # Create the sweep over coupling length for ring resonators
 for ind, coupling_length in enumerate(coupling_lengths, start=1):
-    rr = pdk.EbeamAddDropSymmStraight(coupler_length=coupling_length)
+    rr = pdk.EbeamAddDropSymmStraight(coupler_length=coupling_length, radius=20)
     # Instantiate the MZI
     rr = RingResonator(
         name="Ring_Resonator_cl{:.2f}".format(coupling_length),
