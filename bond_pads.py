@@ -1,5 +1,7 @@
 from siepic import all as pdk
 from ipkiss3 import all as i3
+from math import *
+
 # https://docs.lucedaphotonics.com/guides/technology/
 # The PDK does not have these layers, so I add them manually
 i3.TECH.PROCESS.M1 = i3.ProcessLayer("Router", "M1")
@@ -22,6 +24,7 @@ class ElectricalWireTemplateWModel(i3.ElectricalWireTemplate):
 
     class CircuitModel(i3.CircuitModelView):
         pass
+
 
 # Generate the wires for interconnects. These can be used with ConnectManhattan with rounding_algorithm set to None
 wire_thickness = 10  # Wire thickness in microns
@@ -71,25 +74,36 @@ class Heater(i3.PCell):
 
     class Layout(i3.LayoutView):
         size = i3.Size2Property(default=(4.0, 100.0), doc="Size of the heater")
+        radius = i3.PositiveNumberProperty(default=20.0, doc="Radius of the circular arc of the heater")
         metal_layer = i3.LayerProperty(default=pplayer_m1, doc="Metal used for the heater")
 
         def _generate_elements(self, elems):
-            elems += i3.Rectangle(layer=self.metal_layer, box_size=self.size)
+            elems += i3.RingSegment(layer=self.metal_layer, inner_radius=self.radius-2, outer_radius=self.radius+2,
+                                    angle_start=20, angle_end=340)
             return elems
 
         def _generate_ports(self, ports):
+            r = self.radius
+            w = wire_thickness / 2 + 4
+            cf = pi / 180
             ports += i3.ElectricalPort(
                 name="e_in2",
-                position=(-self.size.x/2, self.size.y/2 - wire_thickness/2),
+                position=((r - w) * cos(20 * cf), (r + w) * sin(20 * cf)),
                 shape=(0, 10),
                 process=self.metal_layer.process,
-                angle=0,  # adding dummy angles so that the connector functions work
+                angle=20,  # adding dummy angles so that the connector functions work
             )
             ports += i3.ElectricalPort(
                 name="e_in1",
-                position=(-self.size.x/2, -self.size.y/2 + wire_thickness/2),
+                position=((r - w) * cos(20 * cf), -(r + w) * sin(20 * cf)),
                 shape=(0, 10),
                 process=self.metal_layer.process,
-                angle=0,  # adding dummy angles so that the connector functions work
+                angle=340,  # adding dummy angles so that the connector functions work
             )
             return ports
+
+
+if __name__ == "__main__":
+    heater = Heater()
+    hl = heater.Layout()
+    hl.visualize()
